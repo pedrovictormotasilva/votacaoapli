@@ -3,9 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
-
 class PageOne extends StatefulWidget {
-  final String AcessToken; // Alterado para AcessToken
+  final String AcessToken;
 
   PageOne({required this.AcessToken, Key? key}) : super(key: key);
 
@@ -33,7 +32,7 @@ class _PageOneState extends State<PageOne> {
     final response = await http.get(
       Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
       headers: {
-        'Authorization': 'Bearer ${widget.AcessToken}', // Usando AcessToken
+        'Authorization': 'Bearer ${widget.AcessToken}',
       },
     );
 
@@ -65,7 +64,8 @@ class _PageOneState extends State<PageOne> {
               'https://servicodados.ibge.gov.br/api/v1/localidades/estados/$state/municipios'),
         );
         if (stateResponse.statusCode == 200) {
-          final List<dynamic> municipiosData = json.decode(stateResponse.body);
+          final List<dynamic> municipiosData =
+              json.decode(stateResponse.body);
           final municipios =
               municipiosData.map((m) => m['nome']).cast<String>().toList();
           brazilianMunicipios[state] = municipios;
@@ -75,20 +75,20 @@ class _PageOneState extends State<PageOne> {
   }
 
   Future<void> fetchAddressDetails(String? cep) async {
-  final response = await http.get(
-    Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
-    headers: {
-      'Authorization': 'Bearer ${widget.AcessToken}', // Alterado para AcessToken
-    },
-  );
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    setState(() {
-      selectedState = data['uf'];
-      selectedMunicipio = data['localidade'];
-    });
+    final response = await http.get(
+      Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
+      headers: {
+        'Authorization': 'Bearer ${widget.AcessToken}',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        selectedState = data['uf'];
+        selectedMunicipio = data['localidade'];
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -327,10 +327,10 @@ class Candidate {
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
     return Candidate(
-      nome: json['name'],
-      apelido: json['apelido'],
-      estado: json['estado'],
-      municipio: json['municipio'],
+      nome: json['name'] ?? '',
+      apelido: json['apelido'] ?? '',
+      estado: json['estado'] ?? '',
+      municipio: json['municipio'] ?? '',
     );
   }
 }
