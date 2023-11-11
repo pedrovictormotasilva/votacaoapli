@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void main() {
-  runApp(MaterialApp(
-    home: CadastroCandidato(),
-  ));
-}
-
 class CadastroCandidato extends StatefulWidget {
-  const CadastroCandidato({Key? key}) : super(key: key);
+  final String accessToken;
+
+  const CadastroCandidato({Key? key, required this.accessToken})
+      : super(key: key);
 
   @override
   _CadastroCandidatoState createState() => _CadastroCandidatoState();
@@ -19,18 +16,38 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController apelidoController = TextEditingController();
   final TextEditingController cepController = TextEditingController();
-  String? estadoSelecionado;
-  String? municipioSelecionado;
+  String estadoSelecionado = "";
+  String municipioSelecionado = "";
 
   Future<void> buscarEndereco(String cep) async {
-    final response =
-        await http.get(Uri.parse('https://viacep.com.br/ws/$cep/json/'));
+    try {
+      final response = await http.get(
+        Uri.parse('https://viacep.com.br/ws/$cep/json/'),
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data.containsKey('erro') && data['erro'] == true) {
+          setState(() {
+            estadoSelecionado = "CEP não encontrado";
+            municipioSelecionado = "";
+          });
+        } else {
+          setState(() {
+            estadoSelecionado = data['uf'];
+            municipioSelecionado = data['localidade'];
+          });
+        }
+      } else {
+        setState(() {
+          estadoSelecionado = "Erro na busca do CEP";
+          municipioSelecionado = "";
+        });
+      }
+    } catch (e) {
       setState(() {
-        estadoSelecionado = data['uf'];
-        municipioSelecionado = data['localidade'];
+        estadoSelecionado = "Erro na busca do CEP";
+        municipioSelecionado = "";
       });
     }
   }
@@ -39,36 +56,47 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
     final nome = nomeController.text;
     final apelido = apelidoController.text;
     final cep = cepController.text;
-    final partido = "Partido"; 
+    final partido = "Partido";
 
-    var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(
-            'https://api-sistema-de-votacao.vercel.app/Candidatos')); 
+    var endereco = {
+  'estado_id': estadoSelecionado ?? '',
+  'municipio_id': municipioSelecionado ?? '',
+};
 
-   
+var request = http.Request(
+  'POST',
+  Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
+);
+request.headers['Content-Type'] = 'application/json';
+request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
+request.body = json.encode({
+  'name': nome,
+  'apelido': apelido,
+  'Partido': partido,
+  'endereco': endereco,
+});
 
-    request.fields['name'] = nome;
-    request.fields['apelido'] = apelido;
-    request.fields['estado_id'] = estadoSelecionado ?? '';
-    request.fields['municipio_id'] = municipioSelecionado ?? '';
-    request.fields['Partido'] = partido;
 
-    
+    try {
+      final response = await request.send();
 
-    var response = await request.send();
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Candidato cadastrado com sucesso.'),
-        duration: Duration(seconds: 2),
-      ));
-      print('Candidato cadastrado com sucesso');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Erro no cadastro do candidato.'),
-        duration: Duration(seconds: 2),
-      ));
-      print('Erro no cadastro do candidato');
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Candidato cadastrado com sucesso.'),
+          duration: Duration(seconds: 2),
+        ));
+        print('Candidato cadastrado com sucesso');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Erro no cadastro do candidato. Response -> ${await response.stream.bytesToString()}'),
+          duration: Duration(seconds: 2),
+        ));
+        print(
+            'Erro no cadastro do candidato, response -> ${await response.stream.bytesToString()}');
+      }
+    } catch (e) {
+      print('Erro na requisição: $e');
     }
   }
 
@@ -107,17 +135,14 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
                 ),
               ],
             ),
-            Text("Estado: ${estadoSelecionado ?? 'Nenhum estado selecionado'}"),
-            Text(
-                "Município: ${municipioSelecionado ?? 'Nenhum município selecionado'}"),
-           
+            Text("Estado: $estadoSelecionado"),
+            Text("Município: $municipioSelecionado"),
             ElevatedButton(
               onPressed: () {
-               
+                // Implemente a lógica para carregar imagens, se necessário
               },
               child: Text("Carregar Imagem"),
             ),
-            
             ElevatedButton(
               onPressed: () {
                 cadastrarCandidato();
@@ -128,5 +153,33 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
         ),
       ),
     );
+  }
+}
+
+class Candidato {
+  final String nome;
+  final String apelido;
+  final String cep;
+  final String partido;
+  final String estadoId;
+  final String municipioId;
+
+  Candidato({
+    required this.nome,
+    required this.apelido,
+    required this.cep,
+    required this.partido,
+    required this.estadoId,
+    required this.municipioId,
+  });
+
+  Map<String, String> toJson() {
+    return {
+      'name': nome,
+      'apelido': apelido,
+      'Partido': partido,
+      'estado_id': estadoId,
+      'municipio_id': municipioId,
+    };
   }
 }

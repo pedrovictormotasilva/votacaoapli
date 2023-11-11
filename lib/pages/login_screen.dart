@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:votacao/pages/page_one.dart';
+import 'package:votacao/pages/home_logado_screen.dart';
+
 import 'package:votacao/pages/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,8 +14,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final emailEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
+
+  void showSuccessSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Login bem-sucedido!"),
+      duration: Duration(seconds: 2),
+    ));
+  }
 
   String errorMessage = '';
 
@@ -49,9 +58,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (decodedToken != null) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => PageOne(AcessToken: token),
+            builder: (context) => PaginaPrincipal(accessToken: token),
           ),
         );
+        showSuccessSnackbar();
       } else {
         setState(() {
           errorMessage = "Token inválido. Por favor, tente novamente.";
@@ -102,18 +112,36 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 45),
-                  buildTextFormField(
+                  TextFormField(
                     controller: emailEditingController,
-                    labelText: "Email",
-                    prefixIcon: Icons.mail,
                     keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.mail),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo obrigatório';
+                      } else if (!value.contains('@')) {
+                        return 'Email inválido';
+                      }
+                      return null;
+                    },
                   ),
                   SizedBox(height: 15),
-                  buildTextFormField(
+                  TextFormField(
                     controller: passwordEditingController,
-                    labelText: "Senha",
-                    prefixIcon: Icons.vpn_key,
                     obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Senha',
+                      prefixIcon: Icon(Icons.vpn_key),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.length < 6) {
+                        return 'Senha deve conter pelo menos 6 caracteres';
+                      }
+                      return null;
+                    },
                   ),
                   SizedBox(height: 10),
                   if (errorMessage.isNotEmpty)

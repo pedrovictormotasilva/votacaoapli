@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:provider/provider.dart';
+
 
 class PageOne extends StatefulWidget {
-  final String AcessToken;
+  final String accessToken;
 
-  PageOne({required this.AcessToken, Key? key}) : super(key: key);
+  PageOne({required this.accessToken, Key? key}) : super(key: key);
 
   @override
   _PageOneState createState() => _PageOneState();
@@ -32,7 +32,7 @@ class _PageOneState extends State<PageOne> {
     final response = await http.get(
       Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
       headers: {
-        'Authorization': 'Bearer ${widget.AcessToken}',
+        'Authorization': 'Bearer ${widget.accessToken}',
       },
     );
 
@@ -78,7 +78,7 @@ class _PageOneState extends State<PageOne> {
     final response = await http.get(
       Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
       headers: {
-        'Authorization': 'Bearer ${widget.AcessToken}',
+        'Authorization': 'Bearer ${widget.accessToken}',
       },
     );
     if (response.statusCode == 200) {

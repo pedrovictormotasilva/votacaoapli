@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:votacao/pages/cadastro_cadidato_screen.dart';
 import 'package:votacao/pages/home_screen.dart';
-
-
-
-
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  const MyApp({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 35, 77, 26)),
         useMaterial3: true,
       ),
-      home: const HomeScreen() 
+      home: HomeScreen(), // Replace 'SEU_TOKEN_AQUI' with your actual token
     );
   }
 }
