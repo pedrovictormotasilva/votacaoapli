@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:votacao/pages/home_logado_screen.dart';
+import 'package:votacao/pages/home_screen.dart';
 
 import 'package:votacao/pages/registration_screen.dart';
 
@@ -17,72 +17,82 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final emailEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
+ 
 
   void showSuccessSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Login bem-sucedido!"),
       duration: Duration(seconds: 2),
+      
     ));
   }
 
   String errorMessage = '';
 
   Future<void> login() async {
-    final email = emailEditingController.text;
-    final password = passwordEditingController.text;
+  final email = emailEditingController.text;
+  final password = passwordEditingController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        errorMessage = "Por favor, preencha todos os campos.";
-      });
-      return;
-    }
+  if (email.isEmpty || password.isEmpty) {
+    setState(() {
+      errorMessage = "Por favor, preencha todos os campos.";
+    });
+    return;
+  }
 
-    final url = Uri.parse('https://api-sistema-de-votacao.vercel.app/login');
+  final url = Uri.parse('https://api-sistema-de-votacao.vercel.app/login');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'email': email,
-        'senha': password,
-      }),
-    );
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: json.encode({
+      'email': email,
+      'senha': password,
+    }),
+  );
 
-    if (response.statusCode == 200) {
-      final token = response.body.trim();
-      final decodedToken = decodeToken(token);
+  if (response.statusCode == 200) {
+    final token = response.body.trim();
+    final decodedToken = decodeToken(token);
 
-      if (decodedToken != null) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => PaginaPrincipal(accessToken: token),
+    if (decodedToken != null) {
+      // Obtendo o nome do pesquisador do token
+      final nomePesquisador = decodedToken['name'];
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => PaginaPrincipal(
+            accessToken: token,
+            emailUsuario: email,
           ),
-        );
-        showSuccessSnackbar();
-      } else {
-        setState(() {
-          errorMessage = "Token inválido. Por favor, tente novamente.";
-        });
-      }
-    } else if (response.statusCode == 401) {
-      setState(() {
-        errorMessage = "Email ou senha incorretos";
-      });
+        ),
+      );
+      showSuccessSnackbar();
     } else {
       setState(() {
-        errorMessage =
-            "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.";
+        errorMessage = "Token inválido. Por favor, tente novamente.";
       });
     }
+  } else if (response.statusCode == 401) {
+    setState(() {
+      errorMessage = "Email ou senha incorretos";
+    });
+  } else {
+    setState(() {
+      errorMessage =
+          "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.";
+    });
   }
+}
+
+
 
   Map<String, dynamic>? decodeToken(String token) {
     try {
       final decoded = JwtDecoder.decode(token);
-      print("");
+      print(decoded);
       return decoded;
     } catch (e) {
       print("");

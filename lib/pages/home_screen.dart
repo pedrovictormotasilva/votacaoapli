@@ -1,91 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:votacao/pages/candidato/cadastro_cadidato_screen.dart';
+import 'package:votacao/pages/adm/dashboard_screen.dart';
+import 'package:votacao/pages/candidato/listaDeCandidatos_screen.dart';
 import 'package:votacao/pages/login_screen.dart';
-import 'package:votacao/pages/registration_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class PaginaPrincipal extends StatelessWidget {
+  final String accessToken;
+  final String emailUsuario;
 
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
+  PaginaPrincipal({
+    required this.accessToken,
+    required this.emailUsuario,
+  });
 
-class _HomeScreenState extends State<HomeScreen> {
+  void clearToken(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+      (Route<dynamic> route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF118E51),
-        
-        centerTitle: true,
-        title: Image.asset(
-          'assets/arce.png',
-          width: 70,
-          height: 70,
-          color: Colors.white
+        title: Text('Página Principal'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: Text(''), // Texto vazio para accountName
+              accountEmail: Text(emailUsuario),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Text(
+                  emailUsuario.isEmpty ? 'U' : emailUsuario[0].toUpperCase(),
+                  style: TextStyle(fontSize: 40.0),
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text('Logout'),
+              onTap: () {
+                clearToken(context);
+              },
+            ),
+          ],
         ),
-        
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/logo.png',
-              width: 350,
-              height: 350,
-            ),
-            SizedBox(height: 25),
-            Text(
-              "Bem-vindo à Votação Governamental",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF395B6B),
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Participe e faça sua voz ser ouvida",
-              style: TextStyle(
-                fontSize: 18,
-                color: Color(0xFF395B6B),
-              ),
-            ),
-            SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        CadastroCandidato(accessToken: accessToken),
+                  ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                primary: Color(0xFF118E51),
-                minimumSize: Size(200, 50),
-              ),
-              child: Text(
-                "Registrar-se",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                ),
-              ),
+              child: Text('Cadastro de Candidatos'),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PageOne(accessToken: accessToken),
+                  ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                primary: Color(0xFF118E51),
-                minimumSize: Size(200, 50),
-              ),
-              child: Text(
-                "Logar",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                ),
-              ),
+              child: Text('Lista de Candidatos'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        DashboardScreen(accessToken: accessToken),
+                  ),
+                );
+              },
+              child: Text('Painel Administrativo'),
             ),
           ],
         ),

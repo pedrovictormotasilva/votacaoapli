@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:votacao/pages/cadastro_cadidato_screen.dart';
-import 'package:votacao/pages/home_screen.dart';
+import 'package:votacao/pages/candidato/cadastro_cadidato_screen.dart';
+import 'package:votacao/pages/welcome_screen.dart';
 
 void main() {
   runApp(const MyApp());
