@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return;
   }
 
-  final url = Uri.parse('https://api-sistema-de-votacao.vercel.app/login');
+  final url = Uri.parse('http://localhost:3000/login');
 
   final response = await http.post(
     url,

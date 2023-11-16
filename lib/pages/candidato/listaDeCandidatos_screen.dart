@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class PageOne extends StatefulWidget {
   final String accessToken;
 
@@ -64,8 +63,7 @@ class _PageOneState extends State<PageOne> {
               'https://servicodados.ibge.gov.br/api/v1/localidades/estados/$state/municipios'),
         );
         if (stateResponse.statusCode == 200) {
-          final List<dynamic> municipiosData =
-              json.decode(stateResponse.body);
+          final List<dynamic> municipiosData = json.decode(stateResponse.body);
           final municipios =
               municipiosData.map((m) => m['nome']).cast<String>().toList();
           brazilianMunicipios[state] = municipios;
@@ -75,18 +73,21 @@ class _PageOneState extends State<PageOne> {
   }
 
   Future<void> fetchAddressDetails(String? cep) async {
-    final response = await http.get(
-      Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
-      headers: {
-        'Authorization': 'Bearer ${widget.accessToken}',
-      },
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      setState(() {
-        selectedState = data['uf'];
-        selectedMunicipio = data['localidade'];
-      });
+    if (cep != null && cep.isNotEmpty) {
+      final response = await http.get(
+        Uri.parse('https://viacep.com.br/ws/$cep/json/'),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        setState(() {
+          selectedState = data['uf'];
+          selectedMunicipio = data['localidade'];
+        });
+      } else {
+        print('Erro ao obter detalhes do endereço');
+      }
     }
   }
 
@@ -110,17 +111,35 @@ class _PageOneState extends State<PageOne> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Campo para inserir o CEP
-            TextField(
-              decoration: InputDecoration(labelText: "CEP"),
-              onChanged: (value) {
-                setState(() {
-                  cep = value;
-                });
-              },
-              onEditingComplete: () {
-                fetchAddressDetails(cep);
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(labelText: "CEP"),
+                    onChanged: (value) {
+                      setState(() {
+                        cep = value;
+                      });
+                    },
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    fetchAddressDetails(cep);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(255, 35, 77, 26),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.search,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 16),
             Text("Estado: ${selectedState ?? 'Nenhum estado selecionado'}"),
@@ -210,6 +229,12 @@ class _PageOneState extends State<PageOne> {
                                   color: Colors.grey,
                                 ),
                               ),
+                              Text(
+                                "Partido: ${candidate.partido}",
+                                style: TextStyle(
+                                  color: Colors.grey, // Cor para o partido
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -287,6 +312,7 @@ class _PageOneState extends State<PageOne> {
                   ),
                   Text("Estado: ${selectedCandidate!.estado}"),
                   Text("Município: ${selectedCandidate!.municipio}"),
+                  Text("Partido: ${selectedCandidate!.partido}"),
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
@@ -317,16 +343,19 @@ class Candidate {
   final String apelido;
   final String estado;
   final String municipio;
+  final String partido;
 
   Candidate({
     required this.nome,
     required this.apelido,
     required this.estado,
     required this.municipio,
+    required this.partido,
   });
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
     return Candidate(
+      partido: json['partido'] ?? '',
       nome: json['name'] ?? '',
       apelido: json['apelido'] ?? '',
       estado: json['estado'] ?? '',

@@ -16,6 +16,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController apelidoController = TextEditingController();
   final TextEditingController cepController = TextEditingController();
+  final TextEditingController partidoController = TextEditingController();
   String estadoSelecionado = "";
   String municipioSelecionado = "";
 
@@ -56,26 +57,24 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
     final nome = nomeController.text;
     final apelido = apelidoController.text;
     final cep = cepController.text;
-    final partido = "Partido";
+    final partido = partidoController.text; 
 
-    var endereco = {
-  'estado_id': estadoSelecionado ?? '',
-  'municipio_id': municipioSelecionado ?? '',
-};
+    
+    await buscarEndereco(cep);
 
-var request = http.Request(
-  'POST',
-  Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
-);
-request.headers['Content-Type'] = 'application/json';
-request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
-request.body = json.encode({
-  'name': nome,
-  'apelido': apelido,
-  'Partido': partido,
-  'endereco': endereco,
-});
-
+    var request = http.Request(
+      'POST',
+      Uri.parse('http://localhost:3000/Candidatos'),
+    );
+    request.headers['Content-Type'] = 'application/json';
+    request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
+    request.body = json.encode({
+      'name': nome,
+      'apelido': apelido,
+      'Partido': partido,
+      'cidade': municipioSelecionado,
+      'estado': estadoSelecionado,
+    });
 
     try {
       final response = await request.send();
@@ -111,23 +110,38 @@ request.body = json.encode({
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Nome:"),
+            Text(
+              "Nome:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            ),
             TextField(
               controller: nomeController,
+              style: TextStyle(fontSize: 16),
             ),
-            Text("Apelido:"),
+            SizedBox(height: 16),
+            Text(
+              "Apelido:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            ),
             TextField(
               controller: apelidoController,
+              style: TextStyle(fontSize: 16),
             ),
-            Text("CEP:"),
+            SizedBox(height: 16),
+            Text(
+              "CEP:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            ),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: cepController,
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
-                ElevatedButton(
+                TextButton(
+                  
                   onPressed: () {
                     buscarEndereco(cepController.text);
                   },
@@ -135,51 +149,57 @@ request.body = json.encode({
                 ),
               ],
             ),
-            Text("Estado: $estadoSelecionado"),
-            Text("Município: $municipioSelecionado"),
+            SizedBox(height: 16),
+            Text(
+              "Partido:", 
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            ),
+            TextField(
+              controller: partidoController,
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16),
+            Text(
+              "Estado: $estadoSelecionado",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            ),
+            Text(
+              "Município: $municipioSelecionado",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+            ),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Implemente a lógica para carregar imagens, se necessário
+                
               },
-              child: Text("Carregar Imagem"),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      8.0), 
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_upload), 
+                  SizedBox(width: 8),
+                  Text("Carregar Imagem"),
+                ],
+              ),
             ),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 cadastrarCandidato();
               },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.green, 
+              ),
               child: Text("Cadastrar Candidato"),
             ),
           ],
         ),
       ),
     );
-  }
-}
-
-class Candidato {
-  final String nome;
-  final String apelido;
-  final String cep;
-  final String partido;
-  final String estadoId;
-  final String municipioId;
-
-  Candidato({
-    required this.nome,
-    required this.apelido,
-    required this.cep,
-    required this.partido,
-    required this.estadoId,
-    required this.municipioId,
-  });
-
-  Map<String, String> toJson() {
-    return {
-      'name': nome,
-      'apelido': apelido,
-      'Partido': partido,
-      'estado_id': estadoId,
-      'municipio_id': municipioId,
-    };
   }
 }

@@ -34,7 +34,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Future<void> sendRegistrationData() async {
     if (_formKey.currentState!.validate()) {
       final url = Uri.parse(
-          'https://api-sistema-de-votacao.vercel.app/cadastro'); // Altere o URL para o seu servidor local
+          'http://localhost:3000/cadastro'); // Altere o URL para o seu servidor local
 
       final response = await http.post(
         url,
