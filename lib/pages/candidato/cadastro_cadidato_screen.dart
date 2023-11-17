@@ -57,9 +57,8 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
     final nome = nomeController.text;
     final apelido = apelidoController.text;
     final cep = cepController.text;
-    final partido = partidoController.text; 
+    final partido = partidoController.text;
 
-    
     await buscarEndereco(cep);
 
     var request = http.Request(
@@ -141,7 +140,6 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
                   ),
                 ),
                 TextButton(
-                  
                   onPressed: () {
                     buscarEndereco(cepController.text);
                   },
@@ -151,7 +149,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
             ),
             SizedBox(height: 16),
             Text(
-              "Partido:", 
+              "Partido:",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
             ),
             TextField(
@@ -169,19 +167,16 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                
-              },
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                      8.0), 
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.cloud_upload), 
+                  Icon(Icons.cloud_upload),
                   SizedBox(width: 8),
                   Text("Carregar Imagem"),
                 ],
@@ -193,7 +188,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
                 cadastrarCandidato();
               },
               style: ElevatedButton.styleFrom(
-                primary: Colors.green, 
+                primary: Colors.green,
               ),
               child: Text("Cadastrar Candidato"),
             ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:votacao/pages/adm/results_screen.dart';
 import 'package:votacao/pages/candidato/cadastro_cadidato_screen.dart';
 import 'package:votacao/pages/adm/dashboard_screen.dart';
 import 'package:votacao/pages/candidato/listaDeCandidatos_screen.dart';
-import 'package:votacao/pages/login_screen.dart';
+import 'package:votacao/pages/login_screen.dart';  
 
 class PaginaPrincipal extends StatelessWidget {
   final String accessToken;
@@ -32,7 +33,7 @@ class PaginaPrincipal extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(''), // Texto vazio para accountName
+              accountName: Text(''),
               accountEmail: Text(emailUsuario),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -73,8 +74,7 @@ class PaginaPrincipal extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        PageOne(accessToken: accessToken),
+                    builder: (context) => PageOne(accessToken: accessToken),
                   ),
                 );
               },
@@ -92,6 +92,19 @@ class PaginaPrincipal extends StatelessWidget {
                 );
               },
               child: Text('Painel Administrativo'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ResultadoVotosScreen(accessToken: accessToken),
+                  ),
+                );
+              },
+              child: Text('Resultados dos Votos'),
             ),
           ],
         ),

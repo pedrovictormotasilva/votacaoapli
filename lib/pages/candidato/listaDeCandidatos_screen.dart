@@ -18,6 +18,10 @@ class _PageOneState extends State<PageOne> {
   String? cep;
   Candidate? selectedCandidate;
 
+  String? votanteNome;
+  int? votanteIdade;
+  String? votanteLocalidade;
+
   Map<String, List<String>> brazilianMunicipios = {};
 
   @override
@@ -29,7 +33,7 @@ class _PageOneState extends State<PageOne> {
 
   Future<void> fetchCandidates() async {
     final response = await http.get(
-      Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
+      Uri.parse('http://localhost:3000/Candidatos'),
       headers: {
         'Authorization': 'Bearer ${widget.accessToken}',
       },
@@ -47,6 +51,48 @@ class _PageOneState extends State<PageOne> {
 
   Future<void> voteCandidate(Candidate candidate) async {
     print('Votou em ${candidate.nome}');
+    bool success = await registerVote(candidate.candidatoId);
+    showSnackbar(
+        success ? 'Voto registrado com sucesso' : 'Erro ao registrar voto');
+  }
+
+  Future<bool> registerVote(int candidateId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/Votar'),
+        headers: {
+          'Authorization': 'Bearer ${widget.accessToken}',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'candidatoId': candidateId,
+          'nome': votanteNome,
+          'Idade': votanteIdade,
+          'Localidade': votanteLocalidade,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        print('Voto registrado com sucesso');
+        return true;
+      } else {
+        print('Erro ao registrar voto');
+        return false;
+      }
+    } catch (error) {
+      print('Erro ao registrar voto: $error');
+      return false;
+    }
+  }
+
+  void showSnackbar(String message, {bool success = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 2),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   Future<void> fetchBrazilianStatesAndMunicipios() async {
@@ -232,7 +278,7 @@ class _PageOneState extends State<PageOne> {
                               Text(
                                 "Partido: ${candidate.partido}",
                                 style: TextStyle(
-                                  color: Colors.grey, // Cor para o partido
+                                  color: Colors.grey,
                                 ),
                               ),
                             ],
@@ -314,10 +360,39 @@ class _PageOneState extends State<PageOne> {
                   Text("Município: ${selectedCandidate!.municipio}"),
                   Text("Partido: ${selectedCandidate!.partido}"),
                   SizedBox(height: 16),
+                  // Adicionado campo para preencher as informações do votante
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Nome do Votante'),
+                    onChanged: (value) {
+                      votanteNome = value;
+                    },
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Idade do Votante'),
+                    onChanged: (value) {
+                      votanteIdade = int.tryParse(value);
+                    },
+                  ),
+                  TextField(
+                    decoration:
+                        InputDecoration(labelText: 'Localidade do Votante'),
+                    onChanged: (value) {
+                      votanteLocalidade = value;
+                    },
+                  ),
+                  SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      voteCandidate(selectedCandidate!);
-                      Navigator.of(context).pop();
+                      // Validar se os campos estão preenchidos
+                      if (votanteNome != null &&
+                          votanteIdade != null &&
+                          votanteLocalidade != null) {
+                        voteCandidate(selectedCandidate!);
+                        Navigator.of(context).pop();
+                      } else {
+                        showSnackbar(
+                            'Preencha todas as informações do votante');
+                      }
                     },
                     child: Text("Votar"),
                   ),
@@ -339,6 +414,7 @@ class _PageOneState extends State<PageOne> {
 }
 
 class Candidate {
+  final int candidatoId;
   final String nome;
   final String apelido;
   final String estado;
@@ -346,6 +422,7 @@ class Candidate {
   final String partido;
 
   Candidate({
+    required this.candidatoId,
     required this.nome,
     required this.apelido,
     required this.estado,
@@ -355,11 +432,12 @@ class Candidate {
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
     return Candidate(
-      partido: json['partido'] ?? '',
+      candidatoId: json['id_candidato'] ?? 0,
+      partido: json['Partido'] ?? '',
       nome: json['name'] ?? '',
       apelido: json['apelido'] ?? '',
       estado: json['estado'] ?? '',
-      municipio: json['municipio'] ?? '',
+      municipio: json['cidade'] ?? '',
     );
   }
 }
