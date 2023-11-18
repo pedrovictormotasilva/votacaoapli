@@ -17,7 +17,6 @@ class _PageOneState extends State<PageOne> {
   String? selectedMunicipio;
   String? cep;
   Candidate? selectedCandidate;
-
   String? votanteNome;
   int? votanteIdade;
   String? votanteLocalidade;
@@ -360,7 +359,6 @@ class _PageOneState extends State<PageOne> {
                   Text("Município: ${selectedCandidate!.municipio}"),
                   Text("Partido: ${selectedCandidate!.partido}"),
                   SizedBox(height: 16),
-                  
                   TextField(
                     decoration: InputDecoration(labelText: 'Nome do Eleitor'),
                     onChanged: (value) {
@@ -383,7 +381,6 @@ class _PageOneState extends State<PageOne> {
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      
                       if (votanteNome != null &&
                           votanteIdade != null &&
                           votanteLocalidade != null) {
