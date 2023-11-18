@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return;
   }
 
-  final url = Uri.parse('http://localhost:3000/login');
+  final url = Uri.parse('http://localhost:3000/Login');
 
   final response = await http.post(
     url,

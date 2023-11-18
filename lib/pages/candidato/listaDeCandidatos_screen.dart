@@ -360,22 +360,22 @@ class _PageOneState extends State<PageOne> {
                   Text("Município: ${selectedCandidate!.municipio}"),
                   Text("Partido: ${selectedCandidate!.partido}"),
                   SizedBox(height: 16),
-                  // Adicionado campo para preencher as informações do votante
+                  
                   TextField(
-                    decoration: InputDecoration(labelText: 'Nome do Votante'),
+                    decoration: InputDecoration(labelText: 'Nome do Eleitor'),
                     onChanged: (value) {
                       votanteNome = value;
                     },
                   ),
                   TextField(
-                    decoration: InputDecoration(labelText: 'Idade do Votante'),
+                    decoration: InputDecoration(labelText: 'Idade do Eleitor'),
                     onChanged: (value) {
                       votanteIdade = int.tryParse(value);
                     },
                   ),
                   TextField(
                     decoration:
-                        InputDecoration(labelText: 'Localidade do Votante'),
+                        InputDecoration(labelText: 'Localidade do Eleitor'),
                     onChanged: (value) {
                       votanteLocalidade = value;
                     },
@@ -383,7 +383,7 @@ class _PageOneState extends State<PageOne> {
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      // Validar se os campos estão preenchidos
+                      
                       if (votanteNome != null &&
                           votanteIdade != null &&
                           votanteLocalidade != null) {

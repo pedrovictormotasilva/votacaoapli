@@ -18,6 +18,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   String? cep;
 
   Map<String, List<String>> brazilianMunicipios = {};
+  int totalVotes = 0;
 
   @override
   void initState() {
@@ -36,10 +37,9 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      final List<Candidate> fetchedCandidates =
-          data.map((e) => Candidate.fromJson(e)).toList();
       setState(() {
-        candidates = fetchedCandidates;
+        candidates = data.map((e) => Candidate.fromJson(e)).toList();
+        calculateTotalVotes(); 
       });
     }
   }
@@ -74,51 +74,51 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   }
 
   Future<void> fetchCandidateVotes(Candidate candidate) async {
-    if (selectedState == null || selectedMunicipio == null) {
-      return;
-    }
+  final responseVotes = await http.get(
+    Uri.parse('http://localhost:3000/Resultado'),
+    headers: {
+      'Authorization': 'Bearer ${widget.accessToken}',
+    },
+  );
 
-    final response = await http.get(
-      Uri.parse('http://localhost:3000/Resultado'),
-      headers: {
-        'Authorization': 'Bearer ${widget.accessToken}',
+  if (responseVotes.statusCode == 200) {
+    final List<dynamic> dataVotes = json.decode(responseVotes.body);
+
+    final int candidateVotes = dataVotes
+        .firstWhere((result) => result['id_candidato'] == candidate.candidatoId)['totalVotos'];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Detalhes do Candidato'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Nome: ${candidate.nome}'),
+              Text('Apelido: ${candidate.apelido}'),
+              Text('Total de Votos: $candidateVotes'),
+              Text('Porcentagem: ${calculatePercentage(candidateVotes)}%'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Icon(Icons.close, color: Colors.red),
+            ),
+          ],
+        );
       },
     );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-
-      final int candidateVotes = data
-          .firstWhere((result) => result['id_candidato'] == candidate.candidatoId)['totalVotos'];
-
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Detalhes do Candidato'),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Nome: ${candidate.nome}'),
-                Text('Apelido: ${candidate.apelido}'),
-                Text('Total de Votos: $candidateVotes'),
-                Text('Porcentagem: ${calculatePercentage(candidateVotes)}%'),
-              ],
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('Fechar'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+    
+    calculateTotalVotes();
   }
+}
+
 
   Future<void> fetchCEPDetails(String cep) async {
     final response = await http.get(
@@ -139,6 +139,15 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<Candidate> filteredCandidates = candidates.where((candidate) {
+      if (selectedMunicipio != null) {
+        return candidate.municipio == selectedMunicipio;
+      } else if (selectedState != null) {
+        return candidate.estado == selectedState;
+      }
+      return true;
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Resultados dos Votos'),
@@ -148,21 +157,35 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'CEP'),
-              onChanged: (value) {
-                setState(() {
-                  cep = value;
-                });
-              },
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (cep != null && cep!.isNotEmpty) {
-                  fetchCEPDetails(cep!);
-                }
-              },
-              child: Text('Confirmar CEP'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(labelText: 'CEP'),
+                    onChanged: (value) {
+                      setState(() {
+                        cep = value;
+                      });
+                    },
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    fetchCEPDetails(cep!);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(255, 35, 77, 26),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.search,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -199,13 +222,13 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
                 },
               ),
             SizedBox(height: 16),
-            Text('Total de Votos: ${calculateTotalVotes()}'),
+            Text('Total de Votos: $totalVotes'),
             SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: candidates.length,
+                itemCount: filteredCandidates.length,
                 itemBuilder: (context, index) {
-                  final candidate = candidates[index];
+                  final candidate = filteredCandidates[index];
                   return Card(
                     elevation: 4,
                     margin: EdgeInsets.only(bottom: 16),
@@ -247,24 +270,11 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
                       subtitle: Text(
                         "Estado: ${candidate.estado}, Município: ${candidate.municipio}",
                       ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              fetchCandidateVotes(candidate);
-                            },
-                            child: Text('Detalhes'),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Total de Votos: ${calculateCandidateVotes(candidate.candidatoId)}',
-                          ),
-                          Text(
-                            'Porcentagem: ${calculatePercentage(calculateCandidateVotes(candidate.candidatoId))}%',
-                          ),
-                        ],
+                      trailing: GestureDetector(
+                        onTap: () {
+                          fetchCandidateVotes(candidate);
+                        },
+                        child: Icon(Icons.info, color: Colors.black),
                       ),
                     ),
                   );
@@ -277,17 +287,22 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
     );
   }
 
-  int calculateTotalVotes() {
-    return candidates.length * 10; // Ajustar conforme lógica real
-  }
-
-  int calculateCandidateVotes(int candidateId) {
-    return 10; // Ajustar conforme lógica real
+  void calculateTotalVotes() {
+    int total = 0;
+    for (var candidate in candidates) {
+      total += candidate.totalVotes;
+    }
+    setState(() {
+      totalVotes = total;
+    });
   }
 
   double calculatePercentage(int votes) {
-    final totalVotes = calculateTotalVotes();
-    return (votes / totalVotes) * 100;
+    if (totalVotes == 0) {
+      return 0.0;
+    }
+    final percentage = (votes / totalVotes) * 100;
+    return double.parse(percentage.toStringAsFixed(2));
   }
 }
 
@@ -298,6 +313,7 @@ class Candidate {
   final String estado;
   final String municipio;
   final String partido;
+  final int totalVotes;
 
   Candidate({
     required this.candidatoId,
@@ -306,6 +322,7 @@ class Candidate {
     required this.estado,
     required this.municipio,
     required this.partido,
+    required this.totalVotes,
   });
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
@@ -316,8 +333,7 @@ class Candidate {
       apelido: json['apelido'] ?? '',
       estado: json['estado'] ?? '',
       municipio: json['cidade'] ?? '',
+      totalVotes: json['totalVotos'] ?? 0,
     );
   }
 }
-
-//TERMINAR DE CONSERTAR ESSA PAGINA!!!
