@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 
 class CadastroCandidato extends StatefulWidget {
   final String accessToken;
@@ -19,6 +20,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   final TextEditingController partidoController = TextEditingController();
   String estadoSelecionado = "";
   String municipioSelecionado = "";
+  PickedFile? _pickedImage;
 
   Future<void> buscarEndereco(String cep) async {
     try {
@@ -50,6 +52,39 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
         estadoSelecionado = "Erro na busca do CEP";
         municipioSelecionado = "";
       });
+    }
+  }
+
+  Future<void> _pickImage() async {
+  final imagePicker = ImagePicker();
+  final XFile? pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
+
+  if (pickedImage != null) {
+    setState(() {
+      _pickedImage = PickedFile(pickedImage.path);
+    });
+  }
+}
+
+
+
+  Future<void> _uploadImage(String imagePath) async {
+    try {
+      final Uri uploadUri = Uri.parse('http://localhost:3000/upload'); 
+      var request = http.MultipartRequest('POST', uploadUri);
+      request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
+      request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final imageUrl = await response.stream.bytesToString();
+        print('Imagem enviada com sucesso. URL: $imageUrl');
+      } else {
+        print('Erro no upload da imagem. Response: ${await response.stream.bytesToString()}');
+      }
+    } catch (e) {
+      print('Erro no upload da imagem: $e');
     }
   }
 
@@ -95,6 +130,10 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
       }
     } catch (e) {
       print('Erro na requisição: $e');
+    }
+
+    if (_pickedImage != null) {
+      await _uploadImage(_pickedImage!.path);
     }
   }
 
@@ -167,7 +206,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: _pickImage,
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),

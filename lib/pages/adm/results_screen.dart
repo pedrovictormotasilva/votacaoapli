@@ -23,7 +23,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   @override
   void initState() {
     super.initState();
-    fetchCandidates();
+    fetchCandidates(null, null); // Adicionei valores padrão nulos
     fetchBrazilianMunicipios();
   }
 
@@ -34,28 +34,67 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
     ));
   }
 
-  Future<void> fetchCandidates() async {
+  Future<void> fetchCandidates([String? estado, String? municipio]) async {
+  try {
+    final response = await http.get(
+      Uri.parse('http://localhost:3000/Candidatos'),
+      headers: {
+        'Authorization': 'Bearer ${widget.accessToken}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+
+      setState(() {
+        candidates = data
+            .map((e) => Candidate.fromJson(e))
+            .where((candidate) =>
+                (municipio == null ||
+                    candidate.municipio.toLowerCase() ==
+                        municipio.toLowerCase()))
+            .toList();
+        fetchCandidatesVotes();
+      });
+    } else {
+      throw Exception('Erro ao obter a lista de candidatos');
+    }
+  } catch (error) {
+    print('Erro ao buscar candidatos: $error');
+    showErrorSnackbar('Erro ao buscar candidatos.');
+  }
+}
+
+  Future<void> fetchCandidatesVotes() async {
     try {
-      final response = await http.get(
-        Uri.parse('http://localhost:3000/Candidatos'),
+      final responseVotes = await http.get(
+        Uri.parse('http://localhost:3000/Resultado'),
         headers: {
           'Authorization': 'Bearer ${widget.accessToken}',
         },
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+      if (responseVotes.statusCode == 200) {
+        final List<dynamic> data = json.decode(responseVotes.body);
 
-        setState(() {
-          candidates = data.map((e) => Candidate.fromJson(e)).toList();
-          calculateTotalVotes();
-        });
+        for (var candidate in candidates) {
+          final result = data.firstWhere(
+            (result) => result['id_candidato'] == candidate.candidatoId,
+            orElse: () => {},
+          );
+
+          if (result.isNotEmpty) {
+            candidate.votos = result['Votos'] ?? 0;
+          }
+        }
+
+        calculateTotalVotes();
       } else {
-        throw Exception('Erro ao obter a lista de candidatos');
+        throw Exception('Erro ao obter os resultados dos votos');
       }
     } catch (error) {
-      print('Erro ao buscar candidatos: $error');
-      showErrorSnackbar('Erro ao buscar candidatos.');
+      print('Erro ao buscar votos dos candidatos: $error');
+      showErrorSnackbar('Erro ao buscar votos dos candidatos.');
     }
   }
 
@@ -101,14 +140,12 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
         final List<dynamic> data = json.decode(responseVotes.body);
 
         final result = data.firstWhere(
-            (result) => result['id_candidato'] == candidate.candidatoId,
-            orElse: () => {});
+          (result) => result['id_candidato'] == candidate.candidatoId,
+          orElse: () => {},
+        );
 
         if (result.isNotEmpty) {
           final int candidateVotes = result['Votos'] ?? 0;
-
-          candidates = data.map((e) => Candidate.fromJson(e)).toList();
-          calculateTotalVotes();
 
           showCandidateDetails(
             context,
@@ -130,7 +167,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   }
 
   void showCandidateDetails(
-      BuildContext context, Candidate candidate, int candidateVotes, int voto) {
+    BuildContext context, Candidate candidate, int candidateVotes, int totalVotes) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -173,20 +210,13 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
         selectedState = estado;
         selectedMunicipio = municipio;
       });
+
+      fetchCandidates(selectedState!, selectedMunicipio!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Candidate> filteredCandidates = candidates.where((candidate) {
-      if (selectedMunicipio != null) {
-        return candidate.municipio == selectedMunicipio;
-      } else if (selectedState != null) {
-        return candidate.estado == selectedState;
-      }
-      return true;
-    }).toList();
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Resultados dos Votos'),
@@ -241,6 +271,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
                   selectedState = estado;
                   selectedMunicipio = null;
                 });
+                fetchCandidates(selectedState!, selectedMunicipio!);
               },
             ),
             SizedBox(height: 16),
@@ -258,6 +289,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
                   setState(() {
                     selectedMunicipio = municipio;
                   });
+                  fetchCandidates(selectedState!, selectedMunicipio!);
                 },
               ),
             SizedBox(height: 16),
@@ -265,9 +297,9 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
             SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredCandidates.length,
+                itemCount: candidates.length,
                 itemBuilder: (context, index) {
-                  final candidate = filteredCandidates[index];
+                  final candidate = candidates[index];
                   return Card(
                     elevation: 4,
                     margin: EdgeInsets.only(bottom: 16),
@@ -339,10 +371,10 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
 
   double calculatePercentage(int votes) {
     if (totalVotes == 0) {
-      return 0.0;
+      return 0;
     }
-    final percentage = (votes / totalVotes) * 100;
-    return double.parse(percentage.toStringAsFixed(2));
+
+    return (votes / totalVotes) * 100;
   }
 }
 
@@ -350,30 +382,29 @@ class Candidate {
   final int candidatoId;
   final String nome;
   final String apelido;
+  final String partido;
+  int votos;
   final String estado;
   final String municipio;
-  final String partido;
-  final int votos;
 
   Candidate({
     required this.candidatoId,
     required this.nome,
     required this.apelido,
+    required this.partido,
+    this.votos = 0,
     required this.estado,
     required this.municipio,
-    required this.partido,
-    required this.votos,
   });
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
     return Candidate(
-      candidatoId: json['id_candidato'] ?? 0,
-      partido: json['Partido'] ?? '',
+      candidatoId: json['id_candidato'],
       nome: json['name'] ?? '',
       apelido: json['apelido'] ?? '',
+      partido: json['Partido'] ?? '',
       estado: json['estado'] ?? '',
       municipio: json['cidade'] ?? '',
-      votos: json['Votos'] ?? 0,
     );
   }
 }
