@@ -33,8 +33,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> sendRegistrationData() async {
     if (_formKey.currentState!.validate()) {
-      final url = Uri.parse(
-          'http://localhost:3000/cadastro'); // Altere o URL para o seu servidor local
+      final url = Uri.parse('http://localhost:3000/cadastro');
 
       final response = await http.post(
         url,
@@ -57,8 +56,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         );
       } else {
+        final Map<String, dynamic> errorData = json.decode(response.body);
         showErrorSnackbar(
-            "Erro ao enviar os dados para a API. Status Code: ${response.statusCode}");
+            "Erro no cadastro: ${errorData['default']['error']['msg']}");
       }
     }
   }

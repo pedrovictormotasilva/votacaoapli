@@ -27,20 +27,35 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
     fetchBrazilianMunicipios();
   }
 
-  Future<void> fetchCandidates() async {
-    final response = await http.get(
-      Uri.parse('http://localhost:3000/Candidatos'),
-      headers: {
-        'Authorization': 'Bearer ${widget.accessToken}',
-      },
-    );
+  void showErrorSnackbar(String errorMessage) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Erro: $errorMessage"),
+      duration: Duration(seconds: 4),
+    ));
+  }
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      setState(() {
-        candidates = data.map((e) => Candidate.fromJson(e)).toList();
-        calculateTotalVotes(); 
-      });
+  Future<void> fetchCandidates() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/Candidatos'),
+        headers: {
+          'Authorization': 'Bearer ${widget.accessToken}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        setState(() {
+          candidates = data.map((e) => Candidate.fromJson(e)).toList();
+          calculateTotalVotes();
+        });
+      } else {
+        throw Exception('Erro ao obter a lista de candidatos');
+      }
+    } catch (error) {
+      print('Erro ao buscar candidatos: $error');
+      showErrorSnackbar('Erro ao buscar candidatos.');
     }
   }
 
@@ -74,19 +89,48 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   }
 
   Future<void> fetchCandidateVotes(Candidate candidate) async {
-  final responseVotes = await http.get(
-    Uri.parse('http://localhost:3000/Resultado'),
-    headers: {
-      'Authorization': 'Bearer ${widget.accessToken}',
-    },
-  );
+    try {
+      final responseVotes = await http.get(
+        Uri.parse('http://localhost:3000/Resultado'),
+        headers: {
+          'Authorization': 'Bearer ${widget.accessToken}',
+        },
+      );
 
-  if (responseVotes.statusCode == 200) {
-    final List<dynamic> dataVotes = json.decode(responseVotes.body);
+      if (responseVotes.statusCode == 200) {
+        final List<dynamic> data = json.decode(responseVotes.body);
 
-    final int candidateVotes = dataVotes
-        .firstWhere((result) => result['id_candidato'] == candidate.candidatoId)['totalVotos'];
+        final result = data.firstWhere(
+            (result) => result['id_candidato'] == candidate.candidatoId,
+            orElse: () => {});
 
+        if (result.isNotEmpty) {
+          final int candidateVotes = result['Votos'] ?? 0;
+
+          candidates = data.map((e) => Candidate.fromJson(e)).toList();
+          calculateTotalVotes();
+
+          showCandidateDetails(
+            context,
+            candidate,
+            candidateVotes,
+            totalVotes,
+          );
+        } else {
+          showErrorSnackbar(
+              'Erro ao buscar votos do candidato: Resultado vazio ou sem votos.');
+        }
+      } else {
+        throw Exception('Erro ao obter os resultados dos votos');
+      }
+    } catch (error) {
+      print('Erro ao buscar votos do candidato: $error');
+      showErrorSnackbar('Erro ao buscar votos do candidato.');
+    }
+  }
+
+  void showCandidateDetails(
+      BuildContext context, Candidate candidate, int candidateVotes, int voto) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -113,12 +157,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
         );
       },
     );
-
-    
-    calculateTotalVotes();
   }
-}
-
 
   Future<void> fetchCEPDetails(String cep) async {
     final response = await http.get(
@@ -290,8 +329,9 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   void calculateTotalVotes() {
     int total = 0;
     for (var candidate in candidates) {
-      total += candidate.totalVotes;
+      total += candidate.votos;
     }
+
     setState(() {
       totalVotes = total;
     });
@@ -313,7 +353,7 @@ class Candidate {
   final String estado;
   final String municipio;
   final String partido;
-  final int totalVotes;
+  final int votos;
 
   Candidate({
     required this.candidatoId,
@@ -322,7 +362,7 @@ class Candidate {
     required this.estado,
     required this.municipio,
     required this.partido,
-    required this.totalVotes,
+    required this.votos,
   });
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
@@ -333,7 +373,7 @@ class Candidate {
       apelido: json['apelido'] ?? '',
       estado: json['estado'] ?? '',
       municipio: json['cidade'] ?? '',
-      totalVotes: json['totalVotos'] ?? 0,
+      votos: json['Votos'] ?? 0,
     );
   }
 }

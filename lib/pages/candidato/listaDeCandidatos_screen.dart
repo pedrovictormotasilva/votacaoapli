@@ -89,7 +89,7 @@ class _PageOneState extends State<PageOne> {
       SnackBar(
         content: Text(message),
         duration: Duration(seconds: 2),
-        backgroundColor: success ? Colors.green : Colors.red,
+        backgroundColor: success ? const Color.fromARGB(255, 59, 73, 60) : Colors.red,
       ),
     );
   }
@@ -388,7 +388,7 @@ class _PageOneState extends State<PageOne> {
                         Navigator.of(context).pop();
                       } else {
                         showSnackbar(
-                            'Preencha todas as informações do votante');
+                            'Preencha todas as informações do Eleitor');
                       }
                     },
                     child: Text("Votar"),
