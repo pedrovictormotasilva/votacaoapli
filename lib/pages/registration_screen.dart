@@ -33,7 +33,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> sendRegistrationData() async {
     if (_formKey.currentState!.validate()) {
-      final url = Uri.parse('http://localhost:3000/cadastro');
+      final url = Uri.parse('http://10.0.0.10:3000/cadastro');
 
       final response = await http.post(
         url,

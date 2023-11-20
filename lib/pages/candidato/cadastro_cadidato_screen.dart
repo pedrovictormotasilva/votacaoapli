@@ -1,6 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 
 class CadastroCandidato extends StatefulWidget {
@@ -21,6 +23,8 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   String estadoSelecionado = "";
   String municipioSelecionado = "";
   PickedFile? _pickedImage;
+  bool fotoCarregada = false;
+  String? imageUrl;
 
   Future<void> buscarEndereco(String cep) async {
     try {
@@ -56,85 +60,80 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   }
 
   Future<void> _pickImage() async {
-  final imagePicker = ImagePicker();
+  final ImagePicker imagePicker = ImagePicker();
   final XFile? pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
+  XFile? _pickedImage;
 
   if (pickedImage != null) {
+    print('Imagem escolhida: ${pickedImage.path}');
     setState(() {
-      _pickedImage = PickedFile(pickedImage.path);
+      _pickedImage = pickedImage;
+      fotoCarregada = true;
     });
+  } else {
+    print('Nenhuma imagem escolhida');
   }
 }
 
 
-
   Future<void> _uploadImage(String imagePath) async {
     try {
-      final Uri uploadUri = Uri.parse('http://localhost:3000/upload'); 
-      var request = http.MultipartRequest('POST', uploadUri);
-      request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
-      request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+      final Dio dio = Dio();
+      final FormData formData = FormData.fromMap({
+        'images':
+            await MultipartFile.fromFile(imagePath, filename: 'image.jpg'),
+      });
 
-      final response = await request.send();
+      final Response response = await dio.post(
+        'http://10.0.0.10:3000/upload',
+        data: formData,
+        options: Options(
+          headers: {'Authorization': 'Bearer ${widget.accessToken}'},
+        ),
+      );
 
       if (response.statusCode == 200) {
-        final imageUrl = await response.stream.bytesToString();
-        print('Imagem enviada com sucesso. URL: $imageUrl');
+        final imageUrl = response.data['url'];
+        print('URL da imagem recebido: $imageUrl');
+        setState(() {
+          this.imageUrl = imageUrl;
+          fotoCarregada = true;
+        });
+        showSuccessSnackbar();
       } else {
-        print('Erro no upload da imagem. Response: ${await response.stream.bytesToString()}');
+        print('Erro no upload da imagem. Response: ${response.data}');
       }
     } catch (e) {
       print('Erro no upload da imagem: $e');
     }
   }
 
+  void showSuccessSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Imagem carregada com sucesso!"),
+      duration: Duration(seconds: 2),
+    ));
+  }
+
   Future<void> cadastrarCandidato() async {
-    final nome = nomeController.text;
-    final apelido = apelidoController.text;
-    final cep = cepController.text;
-    final partido = partidoController.text;
+    print('Valor de _pickedImage: $_pickedImage');
+    print('Valor de fotoCarregada: $fotoCarregada');
 
-    await buscarEndereco(cep);
+    if (_pickedImage == null || fotoCarregada == false) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Por favor, carregue uma imagem antes de cadastrar."),
+        duration: Duration(seconds: 2),
+      ));
+      return;
+    }
+  }
 
-    var request = http.Request(
-      'POST',
-      Uri.parse('http://localhost:3000/Candidatos'),
+  Icon _buildCheckIcon() {
+    return Icon(
+      Icons.check,
+      color: Colors.green,
+      size: 20,
     );
-    request.headers['Content-Type'] = 'application/json';
-    request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
-    request.body = json.encode({
-      'name': nome,
-      'apelido': apelido,
-      'Partido': partido,
-      'cidade': municipioSelecionado,
-      'estado': estadoSelecionado,
-    });
-
-    try {
-      final response = await request.send();
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Candidato cadastrado com sucesso.'),
-          duration: Duration(seconds: 2),
-        ));
-        print('Candidato cadastrado com sucesso');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              'Erro no cadastro do candidato. Response -> ${await response.stream.bytesToString()}'),
-          duration: Duration(seconds: 2),
-        ));
-        print(
-            'Erro no cadastro do candidato, response -> ${await response.stream.bytesToString()}');
-      }
-    } catch (e) {
-      print('Erro na requisição: $e');
-    }
-
-    if (_pickedImage != null) {
-      await _uploadImage(_pickedImage!.path);
-    }
   }
 
   @override
@@ -218,6 +217,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
                   Icon(Icons.cloud_upload),
                   SizedBox(width: 8),
                   Text("Carregar Imagem"),
+                  if (fotoCarregada) _buildCheckIcon(),
                 ],
               ),
             ),

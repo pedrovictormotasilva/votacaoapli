@@ -37,6 +37,8 @@ dependencies:
   jwt_decoder: ^2.0.1
   provider: ^6.1.0
   image_picker: ^1.0.4
+  dio: ^4.0.0
+  cached_network_image: ^3.3.0
   
 
 dev_dependencies:

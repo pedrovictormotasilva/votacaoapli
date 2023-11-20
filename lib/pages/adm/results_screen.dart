@@ -37,7 +37,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   Future<void> fetchCandidates([String? estado, String? municipio]) async {
   try {
     final response = await http.get(
-      Uri.parse('http://localhost:3000/Candidatos'),
+      Uri.parse('http://10.0.0.10:3000/Candidatos'),
       headers: {
         'Authorization': 'Bearer ${widget.accessToken}',
       },
@@ -68,7 +68,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   Future<void> fetchCandidatesVotes() async {
     try {
       final responseVotes = await http.get(
-        Uri.parse('http://localhost:3000/Resultado'),
+        Uri.parse('http://10.0.0.10:3000/Resultado'),
         headers: {
           'Authorization': 'Bearer ${widget.accessToken}',
         },
@@ -130,7 +130,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   Future<void> fetchCandidateVotes(Candidate candidate) async {
     try {
       final responseVotes = await http.get(
-        Uri.parse('http://localhost:3000/Resultado'),
+        Uri.parse('http://10.0.0.10:3000/Resultado'),
         headers: {
           'Authorization': 'Bearer ${widget.accessToken}',
         },
