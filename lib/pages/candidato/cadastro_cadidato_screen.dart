@@ -22,7 +22,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   final TextEditingController partidoController = TextEditingController();
   String estadoSelecionado = "";
   String municipioSelecionado = "";
-  PickedFile? _pickedImage;
+  XFile? _pickedImage;
   bool fotoCarregada = false;
   String? imageUrl;
 
@@ -60,32 +60,29 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   }
 
   Future<void> _pickImage() async {
-  final ImagePicker imagePicker = ImagePicker();
-  final XFile? pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
-  XFile? _pickedImage;
+    final ImagePicker imagePicker = ImagePicker();
+    final XFile? pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
 
-  if (pickedImage != null) {
-    print('Imagem escolhida: ${pickedImage.path}');
-    setState(() {
-      _pickedImage = pickedImage;
-      fotoCarregada = true;
-    });
-  } else {
-    print('Nenhuma imagem escolhida');
+    if (pickedImage != null) {
+      print('Imagem escolhida: ${pickedImage.path}');
+      setState(() {
+        _pickedImage = pickedImage;
+        fotoCarregada = true;
+      });
+    } else {
+      print('Nenhuma imagem escolhida');
+    }
   }
-}
-
 
   Future<void> _uploadImage(String imagePath) async {
     try {
       final Dio dio = Dio();
       final FormData formData = FormData.fromMap({
-        'images':
-            await MultipartFile.fromFile(imagePath, filename: 'image.jpg'),
+        'images': await MultipartFile.fromFile(imagePath, filename: 'image.jpg'),
       });
 
       final Response response = await dio.post(
-        'http://10.0.0.10:3000/upload',
+        'http://10.0.0.10:3000/Candidatos', 
         data: formData,
         options: Options(
           headers: {'Authorization': 'Bearer ${widget.accessToken}'},
@@ -108,13 +105,6 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
     }
   }
 
-  void showSuccessSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Imagem carregada com sucesso!"),
-      duration: Duration(seconds: 2),
-    ));
-  }
-
   Future<void> cadastrarCandidato() async {
     print('Valor de _pickedImage: $_pickedImage');
     print('Valor de fotoCarregada: $fotoCarregada');
@@ -126,6 +116,50 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
       ));
       return;
     }
+
+    try {
+      final Dio dio = Dio();
+      final FormData formData = FormData.fromMap({
+        'name': nomeController.text,
+        'apelido': apelidoController.text,
+        'Partido': partidoController.text,
+        'cep': cepController.text,
+        'cidade': municipioSelecionado,
+        'estado': estadoSelecionado,
+        'images': await MultipartFile.fromFile(_pickedImage!.path, filename: 'image.jpg'),
+      });
+
+      final Response response = await dio.post(
+        'http://10.0.0.10:3000/Candidatos', // Substitua pela URL correta da sua API
+        data: formData,
+        options: Options(
+          headers: {'Authorization': 'Bearer ${widget.accessToken}'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print('Candidato cadastrado com sucesso!');
+      } else {
+        print('Erro ao cadastrar candidato. Response: ${response.data}');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Erro ao cadastrar candidato. Verifique os dados."),
+          duration: Duration(seconds: 2),
+        ));
+      }
+    } catch (e) {
+      print('Erro ao cadastrar candidato: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Erro ao cadastrar candidato. Verifique sua conexão."),
+        duration: Duration(seconds: 2),
+      ));
+    }
+  }
+
+  void showSuccessSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Imagem carregada com sucesso!"),
+      duration: Duration(seconds: 2),
+    ));
   }
 
   Icon _buildCheckIcon() {
