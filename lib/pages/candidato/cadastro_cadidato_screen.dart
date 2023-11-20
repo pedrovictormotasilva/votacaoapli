@@ -130,7 +130,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
       });
 
       final Response response = await dio.post(
-        'http://10.0.0.10:3000/Candidatos', // Substitua pela URL correta da sua API
+        'http://10.0.0.10:3000/Candidatos', 
         data: formData,
         options: Options(
           headers: {'Authorization': 'Bearer ${widget.accessToken}'},
