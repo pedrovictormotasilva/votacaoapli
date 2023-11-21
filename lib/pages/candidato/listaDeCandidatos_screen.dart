@@ -358,7 +358,7 @@ class _PageOneState extends State<PageOne> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Adicione a imagem do candidato aqui
+                  
                   CachedNetworkImage(
                     imageUrl: selectedCandidate!.images.isNotEmpty
                         ? selectedCandidate!.images[0]
