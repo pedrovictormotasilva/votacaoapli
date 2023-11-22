@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class PageOne extends StatefulWidget {
   final String accessToken;
@@ -90,8 +89,7 @@ class _PageOneState extends State<PageOne> {
       SnackBar(
         content: Text(message),
         duration: Duration(seconds: 2),
-        backgroundColor:
-            success ? const Color.fromARGB(255, 59, 73, 60) : Colors.red,
+        backgroundColor: success ? const Color.fromARGB(255, 59, 73, 60) : Colors.red,
       ),
     );
   }
@@ -111,10 +109,8 @@ class _PageOneState extends State<PageOne> {
         );
         if (stateResponse.statusCode == 200) {
           final List<dynamic> municipiosData = json.decode(stateResponse.body);
-          final municipios = municipiosData
-              .map((m) => m['nome'] as String)
-              .cast<String>()
-              .toList();
+          final municipios =
+              municipiosData.map((m) => m['nome']).cast<String>().toList();
           brazilianMunicipios[state] = municipios;
         }
       }
@@ -256,28 +252,10 @@ class _PageOneState extends State<PageOne> {
                     child: ListTile(
                       title: Row(
                         children: [
-                          CachedNetworkImage(
-                            imageUrl: candidate.images.isNotEmpty
-                                ? candidate.images[0]
-                                : '', 
-                            imageBuilder: (context, imageProvider) => Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: imageProvider,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(
-                              Icons.account_circle,
-                              size: 48,
-                              color: Color.fromARGB(255, 35, 77, 26),
-                            ),
+                          Icon(
+                            Icons.account_circle,
+                            size: 48,
+                            color: Color.fromARGB(255, 35, 77, 26),
                           ),
                           SizedBox(width: 16),
                           Column(
@@ -358,28 +336,10 @@ class _PageOneState extends State<PageOne> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  
-                  CachedNetworkImage(
-                    imageUrl: selectedCandidate!.images.isNotEmpty
-                        ? selectedCandidate!.images[0]
-                        : '',
-                    imageBuilder: (context, imageProvider) => Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: imageProvider,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    placeholder: (context, url) => CircularProgressIndicator(),
-                    errorWidget: (context, url, error) => Icon(
-                      Icons.account_circle,
-                      size: 96,
-                      color: Color.fromARGB(255, 35, 77, 26),
-                    ),
+                  Icon(
+                    Icons.account_circle,
+                    size: 96,
+                    color: Color.fromARGB(255, 35, 77, 26),
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -457,7 +417,6 @@ class Candidate {
   final String estado;
   final String municipio;
   final String partido;
-  final List<String> images;
 
   Candidate({
     required this.candidatoId,
@@ -466,7 +425,6 @@ class Candidate {
     required this.estado,
     required this.municipio,
     required this.partido,
-    required this.images,
   });
 
   factory Candidate.fromJson(Map<String, dynamic> json) {
@@ -477,7 +435,6 @@ class Candidate {
       apelido: json['apelido'] ?? '',
       estado: json['estado'] ?? '',
       municipio: json['cidade'] ?? '',
-      images: json['images'] != null ? List<String>.from(json['images']) : [],
     );
   }
 }

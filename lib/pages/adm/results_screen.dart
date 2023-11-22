@@ -180,7 +180,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
               Text('Nome: ${candidate.nome}'),
               Text('Apelido: ${candidate.apelido}'),
               Text('Total de Votos: $candidateVotes'),
-              Text('Porcentagem: ${calculatePercentage(candidateVotes)}%'),
+              Text('Porcentagem: ${calculatePercentage(candidateVotes).toStringAsFixed(2)}%'),
             ],
           ),
           actions: [

@@ -1,9 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 
 class CadastroCandidato extends StatefulWidget {
   final String accessToken;
@@ -22,9 +19,6 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   final TextEditingController partidoController = TextEditingController();
   String estadoSelecionado = "";
   String municipioSelecionado = "";
-  XFile? _pickedImage;
-  bool fotoCarregada = false;
-  String? imageUrl;
 
   Future<void> buscarEndereco(String cep) async {
     try {
@@ -59,115 +53,49 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
     }
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker imagePicker = ImagePicker();
-    final XFile? pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
-
-    if (pickedImage != null) {
-      print('Imagem escolhida: ${pickedImage.path}');
-      setState(() {
-        _pickedImage = pickedImage;
-        fotoCarregada = true;
-      });
-    } else {
-      print('Nenhuma imagem escolhida');
-    }
-  }
-
-  Future<void> _uploadImage(String imagePath) async {
-    try {
-      final Dio dio = Dio();
-      final FormData formData = FormData.fromMap({
-        'images': await MultipartFile.fromFile(imagePath, filename: 'image.jpg'),
-      });
-
-      final Response response = await dio.post(
-        'http://10.0.0.10:3000/Candidatos', 
-        data: formData,
-        options: Options(
-          headers: {'Authorization': 'Bearer ${widget.accessToken}'},
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        final imageUrl = response.data['url'];
-        print('URL da imagem recebido: $imageUrl');
-        setState(() {
-          this.imageUrl = imageUrl;
-          fotoCarregada = true;
-        });
-        showSuccessSnackbar();
-      } else {
-        print('Erro no upload da imagem. Response: ${response.data}');
-      }
-    } catch (e) {
-      print('Erro no upload da imagem: $e');
-    }
-  }
-
   Future<void> cadastrarCandidato() async {
-    print('Valor de _pickedImage: $_pickedImage');
-    print('Valor de fotoCarregada: $fotoCarregada');
+    final nome = nomeController.text;
+    final apelido = apelidoController.text;
+    final cep = cepController.text;
+    final partido = partidoController.text;
 
-    if (_pickedImage == null || fotoCarregada == false) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Por favor, carregue uma imagem antes de cadastrar."),
-        duration: Duration(seconds: 2),
-      ));
-      return;
-    }
+    await buscarEndereco(cep);
+
+    var request = http.Request(
+      'POST',
+      Uri.parse('http://localhost:3000/Candidatos'),
+    );
+    request.headers['Content-Type'] = 'application/json';
+    request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
+    request.body = json.encode({
+      'name': nome,
+      'apelido': apelido,
+      'Partido': partido,
+      'cidade': municipioSelecionado,
+      'estado': estadoSelecionado,
+    });
 
     try {
-      final Dio dio = Dio();
-      final FormData formData = FormData.fromMap({
-        'name': nomeController.text,
-        'apelido': apelidoController.text,
-        'Partido': partidoController.text,
-        'cep': cepController.text,
-        'cidade': municipioSelecionado,
-        'estado': estadoSelecionado,
-        'images': await MultipartFile.fromFile(_pickedImage!.path, filename: 'image.jpg'),
-      });
-
-      final Response response = await dio.post(
-        'http://10.0.0.10:3000/Candidatos', 
-        data: formData,
-        options: Options(
-          headers: {'Authorization': 'Bearer ${widget.accessToken}'},
-        ),
-      );
+      final response = await request.send();
 
       if (response.statusCode == 200) {
-        print('Candidato cadastrado com sucesso!');
-      } else {
-        print('Erro ao cadastrar candidato. Response: ${response.data}');
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Erro ao cadastrar candidato. Verifique os dados."),
+          content: Text('Candidato cadastrado com sucesso.'),
           duration: Duration(seconds: 2),
         ));
+        print('Candidato cadastrado com sucesso');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Erro no cadastro do candidato. Response -> ${await response.stream.bytesToString()}'),
+          duration: Duration(seconds: 2),
+        ));
+        print(
+            'Erro no cadastro do candidato, response -> ${await response.stream.bytesToString()}');
       }
     } catch (e) {
-      print('Erro ao cadastrar candidato: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Erro ao cadastrar candidato. Verifique sua conexão."),
-        duration: Duration(seconds: 2),
-      ));
+      print('Erro na requisição: $e');
     }
-  }
-
-  void showSuccessSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Imagem carregada com sucesso!"),
-      duration: Duration(seconds: 2),
-    ));
-  }
-
-  Icon _buildCheckIcon() {
-    return Icon(
-      Icons.check,
-      color: Colors.green,
-      size: 20,
-    );
   }
 
   @override
@@ -239,7 +167,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _pickImage,
+              onPressed: () {},
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -251,7 +179,6 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
                   Icon(Icons.cloud_upload),
                   SizedBox(width: 8),
                   Text("Carregar Imagem"),
-                  if (fotoCarregada) _buildCheckIcon(),
                 ],
               ),
             ),
