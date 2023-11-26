@@ -395,7 +395,7 @@ class EditResearcherDialog extends StatelessWidget {
               estado: estadoController.text,
               cidade: cidadeController.text,
               cpf: researcher.cpf,
-              senha: senhaController.text, // Use a nova senha se fornecida
+              senha: senhaController.text, 
             );
 
             onUpdate(updatedResearcher);
