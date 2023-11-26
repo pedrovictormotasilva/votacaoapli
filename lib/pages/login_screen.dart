@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:votacao/pages/home_screen.dart';
 
-import 'package:votacao/pages/registration_screen.dart';
+import 'package:votacao/pages/adm/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -167,16 +167,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: "Logar",
                   ),
                   SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => RegistrationScreen(),
-                        ),
-                      );
-                    },
-                    child: Text("Não tem uma conta? Cadastre-se"),
-                  ),
                 ],
               ),
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:votacao/pages/login_screen.dart';
-import 'package:votacao/pages/registration_screen.dart';
+import 'package:votacao/pages/adm/registration_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -49,24 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 18,
                 color: Color(0xFF395B6B),
-              ),
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                primary: Color(0xFF118E51),
-                minimumSize: Size(200, 50),
-              ),
-              child: Text(
-                "Registrar-se",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                ),
               ),
             ),
             SizedBox(height: 10),

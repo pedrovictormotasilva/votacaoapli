@@ -16,6 +16,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final emailEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
   final cpfEditingController = TextEditingController();
+  final estadoEditingController = TextEditingController();
+  final cidadeEditingController = TextEditingController();
 
   void showSuccessSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -45,6 +47,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'email': emailEditingController.text,
           'senha': passwordEditingController.text,
           'cpf': cpfEditingController.text,
+          'estado': estadoEditingController.text,
+          'cidade': cidadeEditingController.text,
         }),
       );
 
@@ -169,6 +173,34 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           },
                         ),
                         SizedBox(height: 20),
+                        TextFormField(
+                          controller: estadoEditingController,
+                          decoration: InputDecoration(
+                            labelText: 'Estado',
+                            prefixIcon: Icon(Icons.add_location_alt_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'O campo Estado é obrigatório, preencha por favor';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 20),
+                        TextFormField(
+                          controller: cidadeEditingController,
+                          decoration: InputDecoration(
+                            labelText: 'Cidade',
+                            prefixIcon: Icon(Icons.add_location_alt_outlined),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'O campo Cidade é obrigatório, preencha por favor';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 20),
                         Material(
                           elevation: 5,
                           borderRadius: BorderRadius.circular(30),
@@ -180,7 +212,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               sendRegistrationData();
                             },
                             child: Text(
-                              "Cadastre-se",
+                              "Cadastrar Pesquisador",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 20,

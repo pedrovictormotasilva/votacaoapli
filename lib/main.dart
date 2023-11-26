@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:votacao/pages/candidato/cadastro_cadidato_screen.dart';
+import 'package:votacao/pages/adm/cadastro_cadidato_screen.dart';
 import 'package:votacao/pages/welcome_screen.dart';
 
 void main() {
