@@ -9,10 +9,12 @@ import 'package:votacao/pages/login_screen.dart';
 class PaginaPrincipal extends StatelessWidget {
   final String accessToken;
   final String emailUsuario;
+  final int roleID;
 
   PaginaPrincipal({
     required this.accessToken,
     required this.emailUsuario,
+    required this.roleID,
   });
 
   void clearToken(BuildContext context) {
@@ -103,91 +105,98 @@ class PaginaPrincipal extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
+             
+              Row(
+                children: [
+                  if (roleID == 1)
+                  buildSquareButton(
+                    
+                    context,
+                    'Lista de Candidatos',
+                    Icons.list,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PageOne(
+                            accessToken: accessToken,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (roleID == 2)
+                  buildSquareButton(
+                    context,
+                    'Cadastro de Candidatos',
+                    Icons.person_add,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CadastroCandidato(
+                            accessToken: accessToken,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             Row(
               children: [
-                buildSquareButton(
-                  context,
-                  'Cadastro de Candidatos',
-                  Icons.person_add,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CadastroCandidato(
-                          accessToken: accessToken,
+                if (roleID == 2)
+                  buildSquareButton(
+                    context,
+                    'Painel Administrativo',
+                    Icons.dashboard,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DashboardScreen(
+                            accessToken: accessToken,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-                buildSquareButton(
-                  context,
-                  'Lista de Candidatos',
-                  Icons.list,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PageOne(
-                          accessToken: accessToken,
+                      );
+                    },
+                  ),
+                if (roleID == 2)
+                  buildSquareButton(
+                    context,
+                    'Resultados dos Votos',
+                    Icons.bar_chart,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResultadoVotosScreen(
+                            accessToken: accessToken,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
               ],
             ),
-            Row(
-              children: [
-                buildSquareButton(
-                  context,
-                  'Painel Administrativo',
-                  Icons.dashboard,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DashboardScreen(
-                          accessToken: accessToken,
+            if (roleID == 2)
+              Row(
+                children: [
+                  buildSquareButton(
+                    context,
+                    'Cadastro de Pesquisadores',
+                    Icons.person_add,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegistrationScreen(),
                         ),
-                      ),
-                    );
-                  },
-                ),
-                buildSquareButton(
-                  context,
-                  'Resultados dos Votos',
-                  Icons.bar_chart,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ResultadoVotosScreen(
-                          accessToken: accessToken,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                buildSquareButton(
-                  context,
-                  'Cadastro de Pesquisadores',
-                  Icons.person_add,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RegistrationScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             SizedBox(height: 20),
             Text(
               "Faça sua voz ser ouvida!",

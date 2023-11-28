@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:votacao/pages/home_screen.dart';
-
-import 'package:votacao/pages/adm/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -17,13 +14,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final emailEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
- 
+
+  
 
   void showSuccessSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Login bem-sucedido!"),
       duration: Duration(seconds: 2),
-      
     ));
   }
 
@@ -54,51 +51,32 @@ class _LoginScreenState extends State<LoginScreen> {
   );
 
   if (response.statusCode == 200) {
-    final token = response.body.trim();
-    final decodedToken = decodeToken(token);
+    final responseData = json.decode(response.body);
 
-    if (decodedToken != null) {
-      // Obtendo o nome do pesquisador do token
-      final nomePesquisador = decodedToken['name'];
+    if (responseData.containsKey('role')) {
+      final roleID = responseData['role'];
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => PaginaPrincipal(
-            accessToken: token,
             emailUsuario: email,
+            accessToken: response.body.trim(),
+            roleID: roleID,
           ),
         ),
       );
       showSuccessSnackbar();
     } else {
       setState(() {
-        errorMessage = "Token inválido. Por favor, tente novamente.";
+        errorMessage = "roleId não encontrado na resposta da API.";
       });
     }
-  } else if (response.statusCode == 401) {
-    setState(() {
-      errorMessage = "Email ou senha incorretos";
-    });
   } else {
     setState(() {
-      errorMessage =
-          "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.";
+      errorMessage = "Falha ao fazer login. Verifique suas credenciais.";
     });
   }
 }
-
-
-
-  Map<String, dynamic>? decodeToken(String token) {
-    try {
-      final decoded = JwtDecoder.decode(token);
-      print(decoded);
-      return decoded;
-    } catch (e) {
-      print("");
-      return null;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,28 +149,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildTextFormField({
-    required TextEditingController controller,
-    required String labelText,
-    required IconData prefixIcon,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        labelText: labelText,
-        prefixIcon: Icon(prefixIcon),
-        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );

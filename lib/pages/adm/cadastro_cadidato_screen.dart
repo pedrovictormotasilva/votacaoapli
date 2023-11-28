@@ -63,7 +63,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
 
     var request = http.Request(
       'POST',
-      Uri.parse('http://localhost:3000/Candidatos'),
+      Uri.parse('http://10.0.0.10:3000/Candidatos'),
     );
     request.headers['Content-Type'] = 'application/json';
     request.headers['Authorization'] = 'Bearer ${widget.accessToken}';

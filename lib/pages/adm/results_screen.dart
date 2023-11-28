@@ -23,7 +23,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   @override
   void initState() {
     super.initState();
-    fetchCandidates(null, null); // Adicionei valores padrão nulos
+    fetchCandidates(null, null);
     fetchBrazilianMunicipios();
   }
 
