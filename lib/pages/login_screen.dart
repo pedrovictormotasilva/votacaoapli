@@ -53,8 +53,10 @@ class _LoginScreenState extends State<LoginScreen> {
   if (response.statusCode == 200) {
     final responseData = json.decode(response.body);
 
-    if (responseData.containsKey('role')) {
+    if (responseData.containsKey('role')) {	
       final roleID = responseData['role'];
+      final cidade = responseData['cidade'];
+      final estado = responseData['estado'];
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -62,6 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
             emailUsuario: email,
             accessToken: response.body.trim(),
             roleID: roleID,
+            cidade: cidade,
+            estado: estado,
           ),
         ),
       );
@@ -77,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 }
+
 
   @override
   Widget build(BuildContext context) {

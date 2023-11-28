@@ -4,8 +4,15 @@ import 'dart:convert';
 
 class PageOne extends StatefulWidget {
   final String accessToken;
+  final String cidade;
+  final String estado;
 
-  PageOne({required this.accessToken, Key? key}) : super(key: key);
+  PageOne({
+    required this.accessToken,
+    required this.cidade,
+    required this.estado,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _PageOneState createState() => _PageOneState();
@@ -13,40 +20,40 @@ class PageOne extends StatefulWidget {
 
 class _PageOneState extends State<PageOne> {
   List<Candidate> candidates = [];
-  String? selectedState;
-  String? selectedMunicipio;
-  String? cep;
   Candidate? selectedCandidate;
   String? votanteNome;
   int? votanteIdade;
   String? votanteLocalidade;
 
-  Map<String, List<String>> brazilianMunicipios = {};
-
   @override
   void initState() {
     super.initState();
     fetchCandidates();
-    fetchBrazilianStatesAndMunicipios();
   }
 
   Future<void> fetchCandidates() async {
-    final response = await http.get(
-      Uri.parse('http://10.0.0.10:3000/Candidatos'),
-      headers: {
-        'Authorization': 'Bearer ${widget.accessToken}',
-      },
-    );
+  final response = await http.get(
+    Uri.parse('http://10.0.0.10:3000/Candidatos'),
+    headers: {
+      'Authorization': 'Bearer ${widget.accessToken}',
+    },
+  );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      final List<Candidate> fetchedCandidates =
-          data.map((e) => Candidate.fromJson(e)).toList();
-      setState(() {
-        candidates = fetchedCandidates;
-      });
-    }
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    final List<Candidate> fetchedCandidates =
+        data.map((e) => Candidate.fromJson(e)).toList();
+
+    
+    final filteredCandidates = fetchedCandidates.where((candidate) =>
+        candidate.municipio == widget.cidade &&
+        candidate.estado == widget.estado);
+
+    setState(() {
+      candidates = filteredCandidates.toList();
+    });
   }
+}
 
   Future<void> voteCandidate(Candidate candidate) async {
     print('Votou em ${candidate.nome}');
@@ -94,59 +101,8 @@ class _PageOneState extends State<PageOne> {
     );
   }
 
-  Future<void> fetchBrazilianStatesAndMunicipios() async {
-    final response = await http.get(
-      Uri.parse('https://servicodados.ibge.gov.br/api/v1/localidades/estados'),
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      for (var stateData in data) {
-        final state = stateData['sigla'];
-        final stateResponse = await http.get(
-          Uri.parse(
-              'https://servicodados.ibge.gov.br/api/v1/localidades/estados/$state/municipios'),
-        );
-        if (stateResponse.statusCode == 200) {
-          final List<dynamic> municipiosData = json.decode(stateResponse.body);
-          final municipios =
-              municipiosData.map((m) => m['nome']).cast<String>().toList();
-          brazilianMunicipios[state] = municipios;
-        }
-      }
-    }
-  }
-
-  Future<void> fetchAddressDetails(String? cep) async {
-    if (cep != null && cep.isNotEmpty) {
-      final response = await http.get(
-        Uri.parse('https://viacep.com.br/ws/$cep/json/'),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-
-        setState(() {
-          selectedState = data['uf'];
-          selectedMunicipio = data['localidade'];
-        });
-      } else {
-        print('Erro ao obter detalhes do endereço');
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<Candidate> filteredCandidates = candidates.where((candidate) {
-      if (selectedMunicipio != null) {
-        return candidate.municipio == selectedMunicipio;
-      } else if (selectedState != null) {
-        return candidate.estado == selectedState;
-      }
-      return true;
-    }).toList();
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Lista de Candidatos"),
@@ -156,96 +112,11 @@ class _PageOneState extends State<PageOne> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(labelText: "CEP"),
-                    onChanged: (value) {
-                      setState(() {
-                        cep = value;
-                      });
-                    },
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    fetchAddressDetails(cep);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 35, 77, 26),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.search,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text("Estado: ${selectedState ?? 'Nenhum estado selecionado'}"),
-            Text(
-                "Município: ${selectedMunicipio ?? 'Nenhum município selecionado'}"),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: selectedState,
-                    hint: Text("Selecione o Estado"),
-                    items: [
-                      DropdownMenuItem(
-                        value: null,
-                        child: Text("Todos os Estados"),
-                      ),
-                      ...brazilianMunicipios.keys.map((state) {
-                        return DropdownMenuItem(
-                          value: state,
-                          child: Text(state),
-                        );
-                      }).toList(),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedState = value;
-                        selectedMunicipio = null;
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: selectedMunicipio,
-                    hint: Text("Selecione o Município"),
-                    items: selectedState != null
-                        ? brazilianMunicipios[selectedState]!.map((municipio) {
-                            return DropdownMenuItem(
-                              value: municipio,
-                              child: Text(municipio),
-                            );
-                          }).toList()
-                        : [],
-                    onChanged: (value) {
-                      setState(() {
-                        selectedMunicipio = value;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredCandidates.length,
+                itemCount: candidates.length,
                 itemBuilder: (context, index) {
-                  final candidate = filteredCandidates[index];
+                  final candidate = candidates[index];
                   return Card(
                     elevation: 4,
                     margin: EdgeInsets.only(bottom: 16),

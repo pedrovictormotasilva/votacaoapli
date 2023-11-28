@@ -39,7 +39,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
     final response = await http.get(
       Uri.parse('http://10.0.0.10:3000/Candidatos'),
       headers: {
-        'Authorization': 'Bearer ${widget.accessToken}',
+        
       },
     );
 
@@ -60,7 +60,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
       throw Exception('Erro ao obter a lista de candidatos');
     }
   } catch (error) {
-    print('Erro ao buscar candidatos: $error');
+    print('');
     showErrorSnackbar('Erro ao buscar candidatos.');
   }
 }
@@ -70,7 +70,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
       final responseVotes = await http.get(
         Uri.parse('http://10.0.0.10:3000/Resultado'),
         headers: {
-          'Authorization': 'Bearer ${widget.accessToken}',
+          
         },
       );
 
@@ -132,7 +132,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
       final responseVotes = await http.get(
         Uri.parse('http://10.0.0.10:3000/Resultado'),
         headers: {
-          'Authorization': 'Bearer ${widget.accessToken}',
+          
         },
       );
 

@@ -7,14 +7,18 @@ import 'package:votacao/pages/candidato/listaDeCandidatos_screen.dart';
 import 'package:votacao/pages/login_screen.dart';
 
 class PaginaPrincipal extends StatelessWidget {
-  final String accessToken;
   final String emailUsuario;
+  final String accessToken;
   final int roleID;
+  final String cidade;
+  final String estado;
 
   PaginaPrincipal({
-    required this.accessToken,
     required this.emailUsuario,
+    required this.accessToken,
     required this.roleID,
+    required this.cidade,
+    required this.estado,
   });
 
   void clearToken(BuildContext context) {
@@ -105,12 +109,10 @@ class PaginaPrincipal extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-             
-              Row(
-                children: [
-                  if (roleID == 1)
+            Row(
+              children: [
+                if (roleID == 1 || roleID == 2)
                   buildSquareButton(
-                    
                     context,
                     'Lista de Candidatos',
                     Icons.list,
@@ -120,12 +122,14 @@ class PaginaPrincipal extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => PageOne(
                             accessToken: accessToken,
+                            cidade: cidade, 
+                            estado: estado, 
                           ),
                         ),
                       );
                     },
                   ),
-                  if (roleID == 2)
+                if (roleID == 2)
                   buildSquareButton(
                     context,
                     'Cadastro de Candidatos',
@@ -141,8 +145,8 @@ class PaginaPrincipal extends StatelessWidget {
                       );
                     },
                   ),
-                ],
-              ),
+              ],
+            ),
             Row(
               children: [
                 if (roleID == 2)
