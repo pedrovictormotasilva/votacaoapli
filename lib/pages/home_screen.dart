@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:votacao/pages/adm/registration_screen.dart';
+import 'package:votacao/pages/adm/cadastro_pesquisador_screen.dart';
 import 'package:votacao/pages/adm/results_screen.dart';
 import 'package:votacao/pages/adm/cadastro_cadidato_screen.dart';
 import 'package:votacao/pages/adm/dashboard_screen.dart';
@@ -122,8 +122,9 @@ class PaginaPrincipal extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => PageOne(
                             accessToken: accessToken,
-                            cidade: cidade, 
-                            estado: estado, 
+                            cidade: cidade,
+                            estado: estado,
+                            roleID: roleID,
                           ),
                         ),
                       );

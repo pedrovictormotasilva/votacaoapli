@@ -19,6 +19,7 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
   final TextEditingController partidoController = TextEditingController();
   String estadoSelecionado = "";
   String municipioSelecionado = "";
+  bool isLoading = false;
 
   Future<void> buscarEndereco(String cep) async {
     try {
@@ -59,14 +60,18 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
     final cep = cepController.text;
     final partido = partidoController.text;
 
+    setState(() {
+      isLoading = true;
+    });
+
     await buscarEndereco(cep);
 
     var request = http.Request(
       'POST',
-      Uri.parse('http://10.0.0.10:3000/Candidatos'),
+      Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
     );
     request.headers['Content-Type'] = 'application/json';
-    request.headers['Authorization'] = 'Bearer ${widget.accessToken}';
+
     request.body = json.encode({
       'name': nome,
       'apelido': apelido,
@@ -95,6 +100,10 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
       }
     } catch (e) {
       print('Erro na requisição: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -184,13 +193,13 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                cadastrarCandidato();
-              },
+              onPressed: isLoading ? null : cadastrarCandidato,
               style: ElevatedButton.styleFrom(
                 primary: Colors.green,
               ),
-              child: Text("Cadastrar Candidato"),
+              child: isLoading
+                  ? CircularProgressIndicator()
+                  : Text("Cadastrar Candidato"),
             ),
           ],
         ),

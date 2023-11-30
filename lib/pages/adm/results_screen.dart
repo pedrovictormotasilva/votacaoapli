@@ -35,43 +35,37 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   }
 
   Future<void> fetchCandidates([String? estado, String? municipio]) async {
-  try {
-    final response = await http.get(
-      Uri.parse('http://10.0.0.10:3000/Candidatos'),
-      headers: {
-        
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
+        headers: {},
+      );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
 
-      setState(() {
-        candidates = data
-            .map((e) => Candidate.fromJson(e))
-            .where((candidate) =>
-                (municipio == null ||
-                    candidate.municipio.toLowerCase() ==
-                        municipio.toLowerCase()))
-            .toList();
-        fetchCandidatesVotes();
-      });
-    } else {
-      throw Exception('Erro ao obter a lista de candidatos');
+        setState(() {
+          candidates = data
+              .map((e) => Candidate.fromJson(e))
+              .where((candidate) => (municipio == null ||
+                  candidate.municipio.toLowerCase() == municipio.toLowerCase()))
+              .toList();
+          fetchCandidatesVotes();
+        });
+      } else {
+        throw Exception('Erro ao obter a lista de candidatos');
+      }
+    } catch (error) {
+      print('');
+      showErrorSnackbar('Erro ao buscar candidatos.');
     }
-  } catch (error) {
-    print('');
-    showErrorSnackbar('Erro ao buscar candidatos.');
   }
-}
 
   Future<void> fetchCandidatesVotes() async {
     try {
       final responseVotes = await http.get(
-        Uri.parse('http://10.0.0.10:3000/Resultado'),
-        headers: {
-          
-        },
+        Uri.parse('https://api-sistema-de-votacao.vercel.app/Resultado'),
+        headers: {},
       );
 
       if (responseVotes.statusCode == 200) {
@@ -130,10 +124,8 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   Future<void> fetchCandidateVotes(Candidate candidate) async {
     try {
       final responseVotes = await http.get(
-        Uri.parse('http://10.0.0.10:3000/Resultado'),
-        headers: {
-          
-        },
+        Uri.parse('https://api-sistema-de-votacao.vercel.app/Resultado'),
+        headers: {},
       );
 
       if (responseVotes.statusCode == 200) {
@@ -166,8 +158,8 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
     }
   }
 
-  void showCandidateDetails(
-    BuildContext context, Candidate candidate, int candidateVotes, int totalVotes) {
+  void showCandidateDetails(BuildContext context, Candidate candidate,
+      int candidateVotes, int totalVotes) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -180,7 +172,8 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
               Text('Nome: ${candidate.nome}'),
               Text('Apelido: ${candidate.apelido}'),
               Text('Total de Votos: $candidateVotes'),
-              Text('Porcentagem: ${calculatePercentage(candidateVotes).toStringAsFixed(2)}%'),
+              Text(
+                  'Porcentagem: ${calculatePercentage(candidateVotes).toStringAsFixed(2)}%'),
             ],
           ),
           actions: [

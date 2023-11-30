@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:votacao/pages/login_screen.dart';
-import 'package:votacao/pages/adm/registration_screen.dart';
+import 'package:votacao/pages/adm/cadastro_pesquisador_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,15 +15,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFF118E51),
-        
         centerTitle: true,
-        title: Image.asset(
-          'assets/arce.png',
-          width: 70,
-          height: 70,
-          color: Colors.white
-        ),
-        
+        title: Image.asset('assets/arce.png',
+            width: 70, height: 70, color: Colors.white),
       ),
       body: Center(
         child: Column(

@@ -28,7 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> fetchCandidates() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.0.10:3000/Candidatos'),
+        Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
       );
 
       if (response.statusCode == 200) {
@@ -49,7 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> fetchResearchers() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.0.10:3000/Pesquisadores'),
+        Uri.parse('https://api-sistema-de-votacao.vercel.app/Pesquisadores'),
       );
 
       if (response.statusCode == 200) {
@@ -71,7 +71,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       int candidateId, Candidate updatedCandidate) async {
     try {
       final response = await http.put(
-        Uri.parse('http://10.0.0.10:3000/Candidatos/$candidateId'),
+        Uri.parse(
+            'https://api-sistema-de-votacao.vercel.app/Candidatos/$candidateId'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -99,7 +100,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> deleteCandidate(int candidateId) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://10.0.0.10:3000/Candidatos/$candidateId'),
+        Uri.parse(
+            'https://api-sistema-de-votacao.vercel.app/Candidatos/$candidateId'),
       );
 
       if (response.statusCode == 200) {
@@ -125,7 +127,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       int pesquisadorId, Pesquisador updatedResearcher) async {
     try {
       final response = await http.put(
-        Uri.parse('http://10.0.0.10:3000/Pesquisador/$pesquisadorId'),
+        Uri.parse(
+            'https://api-sistema-de-votacao.vercel.app/Pesquisador/$pesquisadorId'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -153,7 +156,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> deleteResearcher(int pesquisadorId) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://10.0.0.10:3000/Pesquisador/$pesquisadorId'),
+        Uri.parse(
+            'https://api-sistema-de-votacao.vercel.app/Pesquisador/$pesquisadorId'),
       );
 
       if (response.statusCode == 200) {
@@ -255,7 +259,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             selectedType == 'Candidatos'
                 ? 'Candidatos'
                 : (selectedType == 'Pesquisadores' ? 'Pesquisadores' : 'Todos'),
-            style: TextStyle(fontSize: 20,),
+            style: TextStyle(
+              fontSize: 20,
+            ),
           ),
           Expanded(
             child: ListView(
@@ -395,7 +401,7 @@ class EditResearcherDialog extends StatelessWidget {
               estado: estadoController.text,
               cidade: cidadeController.text,
               cpf: researcher.cpf,
-              senha: senhaController.text, // Use a nova senha se fornecida
+              senha: senhaController.text, // Usar a nova senha se fornecida
             );
 
             onUpdate(updatedResearcher);
@@ -542,9 +548,8 @@ class EditCandidateDialog extends StatelessWidget {
         TextEditingController(text: candidate.estado);
     TextEditingController cidadeController =
         TextEditingController(text: candidate.cidade);
-        TextEditingController partidoController =
+    TextEditingController partidoController =
         TextEditingController(text: candidate.partido);
-
 
     return AlertDialog(
       title: Text('Editar Candidato'),
@@ -558,7 +563,7 @@ class EditCandidateDialog extends StatelessWidget {
             controller: apelidoController,
             decoration: InputDecoration(labelText: 'Apelido'),
           ),
-           TextField(
+          TextField(
             controller: partidoController,
             decoration: InputDecoration(labelText: 'Partido'),
           ),
@@ -570,7 +575,6 @@ class EditCandidateDialog extends StatelessWidget {
             controller: cidadeController,
             decoration: InputDecoration(labelText: 'Cidade'),
           ),
-         
         ],
       ),
       actions: <Widget>[

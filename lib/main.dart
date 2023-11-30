@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:votacao/pages/adm/cadastro_cadidato_screen.dart';
+import 'package:votacao/pages/login_screen.dart';
 import 'package:votacao/pages/welcome_screen.dart';
 
 void main() {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 35, 77, 26)),
         useMaterial3: true,
       ),
-      home: HomeScreen(), // Replace 'SEU_TOKEN_AQUI' with your actual token
+      home: LoginScreen(), 
     );
   }
 }

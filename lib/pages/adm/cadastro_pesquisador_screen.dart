@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:votacao/pages/login_screen.dart';
 import 'dart:convert';
+import 'package:votacao/pages/login_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -18,6 +18,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final cpfEditingController = TextEditingController();
   final estadoEditingController = TextEditingController();
   final cidadeEditingController = TextEditingController();
+  final cepEditingController = TextEditingController();
+
+  bool isLoading = false;
 
   void showSuccessSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -35,35 +38,65 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> sendRegistrationData() async {
     if (_formKey.currentState!.validate()) {
-      final url = Uri.parse('http://10.0.0.10:3000/cadastro');
+      final url =
+          Uri.parse('https://api-sistema-de-votacao.vercel.app/cadastro');
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'name': nameEditingController.text,
-          'email': emailEditingController.text,
-          'senha': passwordEditingController.text,
-          'cpf': cpfEditingController.text,
-          'estado': estadoEditingController.text,
-          'cidade': cidadeEditingController.text,
-        }),
-      );
+      setState(() {
+        isLoading = true;
+      });
 
-      if (response.statusCode == 200) {
-        showSuccessSnackbar();
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => LoginScreen(),
-          ),
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'name': nameEditingController.text,
+            'email': emailEditingController.text,
+            'senha': passwordEditingController.text,
+            'cpf': cpfEditingController.text,
+            'estado': estadoEditingController.text,
+            'cidade': cidadeEditingController.text,
+          }),
         );
-      } else {
-        final Map<String, dynamic> errorData = json.decode(response.body);
-        showErrorSnackbar(
-            "Erro no cadastro: ${errorData['default']['error']['msg']}");
+
+        if (response.statusCode == 200) {
+          showSuccessSnackbar();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => LoginScreen(),
+            ),
+          );
+        } else {
+          final Map<String, dynamic> errorData = json.decode(response.body);
+          showErrorSnackbar(
+              "Erro no cadastro: ${errorData['default']['error']['msg']}");
+        }
+      } catch (e) {
+        showErrorSnackbar("Erro inesperado durante o cadastro.");
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
+    }
+  }
+
+  Future<void> fetchCepData() async {
+    final cep = cepEditingController.text;
+    final url = Uri.parse('https://viacep.com.br/ws/$cep/json/');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> cepData = json.decode(response.body);
+      setState(() {
+        estadoEditingController.text = cepData['uf'];
+        cidadeEditingController.text = cepData['localidade'];
+      });
+    } else {
+      showErrorSnackbar("CEP não encontrado");
     }
   }
 
@@ -201,26 +234,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           },
                         ),
                         SizedBox(height: 20),
-                        Material(
-                          elevation: 5,
-                          borderRadius: BorderRadius.circular(30),
-                          color: Color(0xFF118E51),
-                          child: MaterialButton(
-                            padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                            minWidth: MediaQuery.of(context).size.width,
-                            onPressed: () {
-                              sendRegistrationData();
-                            },
-                            child: Text(
-                              "Cadastrar Pesquisador",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                        TextFormField(
+                          controller: cepEditingController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'CEP',
+                            prefixIcon: Icon(Icons.location_on),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Campo obrigatório';
+                            } else if (value.length != 8) {
+                              return 'CEP deve conter 8 dígitos';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            fetchCepData();
+                          },
+                          child: Text(
+                            "Preencher Estado e Cidade pelo CEP",
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            sendRegistrationData();
+                          },
+                          child: isLoading
+                              ? CircularProgressIndicator()
+                              : Text("Cadastrar Pesquisador"),
                         ),
                       ],
                     ),

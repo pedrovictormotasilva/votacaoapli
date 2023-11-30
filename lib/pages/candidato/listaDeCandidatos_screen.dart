@@ -6,11 +6,13 @@ class PageOne extends StatefulWidget {
   final String accessToken;
   final String cidade;
   final String estado;
+  final int roleID;
 
   PageOne({
     required this.accessToken,
     required this.cidade,
     required this.estado,
+    required this.roleID,
     Key? key,
   }) : super(key: key);
 
@@ -24,6 +26,7 @@ class _PageOneState extends State<PageOne> {
   String? votanteNome;
   int? votanteIdade;
   String? votanteLocalidade;
+  bool isLoading = true; 
 
   @override
   void initState() {
@@ -32,28 +35,29 @@ class _PageOneState extends State<PageOne> {
   }
 
   Future<void> fetchCandidates() async {
-  final response = await http.get(
-    Uri.parse('http://10.0.0.10:3000/Candidatos'),
-    headers: {
-      'Authorization': 'Bearer ${widget.accessToken}',
-    },
-  );
+    final response = await http.get(
+      Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
+      headers: {},
+    );
 
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
-    final List<Candidate> fetchedCandidates =
-        data.map((e) => Candidate.fromJson(e)).toList();
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      final List<Candidate> fetchedCandidates =
+          data.map((e) => Candidate.fromJson(e)).toList();
 
-    
-    final filteredCandidates = fetchedCandidates.where((candidate) =>
-        candidate.municipio == widget.cidade &&
-        candidate.estado == widget.estado);
+      // Filtra candidatos com base na cidade e no estado do pesquisador e se o roleID foi 2(adm), mostra tudo.
+      final filteredCandidates = widget.roleID == 2
+          ? fetchedCandidates
+          : fetchedCandidates.where((candidate) =>
+              candidate.municipio == widget.cidade &&
+              candidate.estado == widget.estado);
 
-    setState(() {
-      candidates = filteredCandidates.toList();
-    });
+      setState(() {
+        candidates = filteredCandidates.toList();
+        isLoading = false; 
+      });
+    }
   }
-}
 
   Future<void> voteCandidate(Candidate candidate) async {
     print('Votou em ${candidate.nome}');
@@ -65,9 +69,8 @@ class _PageOneState extends State<PageOne> {
   Future<bool> registerVote(int candidateId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.0.10:3000/Votar'),
+        Uri.parse('https://api-sistema-de-votacao.vercel.app/Votar'),
         headers: {
-          'Authorization': 'Bearer ${widget.accessToken}',
           'Content-Type': 'application/json',
         },
         body: json.encode({
@@ -96,7 +99,8 @@ class _PageOneState extends State<PageOne> {
       SnackBar(
         content: Text(message),
         duration: Duration(seconds: 2),
-        backgroundColor: success ? const Color.fromARGB(255, 59, 73, 60) : Colors.red,
+        backgroundColor:
+            success ? const Color.fromARGB(255, 59, 73, 60) : Colors.red,
       ),
     );
   }
@@ -107,74 +111,76 @@ class _PageOneState extends State<PageOne> {
       appBar: AppBar(
         title: Text("Lista de Candidatos"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: candidates.length,
-                itemBuilder: (context, index) {
-                  final candidate = candidates[index];
-                  return Card(
-                    elevation: 4,
-                    margin: EdgeInsets.only(bottom: 16),
-                    child: ListTile(
-                      title: Row(
-                        children: [
-                          Icon(
-                            Icons.account_circle,
-                            size: 48,
-                            color: Color.fromARGB(255, 35, 77, 26),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator()) 
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: candidates.length,
+                      itemBuilder: (context, index) {
+                        final candidate = candidates[index];
+                        return Card(
+                          elevation: 4,
+                          margin: EdgeInsets.only(bottom: 16),
+                          child: ListTile(
+                            title: Row(
+                              children: [
+                                Icon(
+                                  Icons.account_circle,
+                                  size: 48,
+                                  color: Color.fromARGB(255, 35, 77, 26),
+                                ),
+                                SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      candidate.nome,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      candidate.apelido,
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Partido: ${candidate.partido}",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            subtitle: Text(
+                              "Estado: ${candidate.estado}, Município: ${candidate.municipio}",
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(Icons.info),
+                              onPressed: () {
+                                setState(() {
+                                  selectedCandidate = candidate;
+                                });
+                                _showCandidateDetails(context);
+                              },
+                            ),
                           ),
-                          SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                candidate.nome,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                candidate.apelido,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                "Partido: ${candidate.partido}",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      subtitle: Text(
-                        "Estado: ${candidate.estado}, Município: ${candidate.municipio}",
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.info),
-                        onPressed: () {
-                          setState(() {
-                            selectedCandidate = candidate;
-                          });
-                          _showCandidateDetails(context);
-                        },
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

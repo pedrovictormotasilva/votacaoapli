@@ -15,7 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
 
-  
+  bool isLoading = false;
+  String errorMessage = '';
 
   void showSuccessSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -24,64 +25,71 @@ class _LoginScreenState extends State<LoginScreen> {
     ));
   }
 
-  String errorMessage = '';
-
   Future<void> login() async {
-  final email = emailEditingController.text;
-  final password = passwordEditingController.text;
+    if (_formKey.currentState!.validate()) {
+      final email = emailEditingController.text;
+      final password = passwordEditingController.text;
 
-  if (email.isEmpty || password.isEmpty) {
-    setState(() {
-      errorMessage = "Por favor, preencha todos os campos.";
-    });
-    return;
-  }
-
-  final url = Uri.parse('http://10.0.0.10:3000/Login');
-
-  final response = await http.post(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: json.encode({
-      'email': email,
-      'senha': password,
-    }),
-  );
-
-  if (response.statusCode == 200) {
-    final responseData = json.decode(response.body);
-
-    if (responseData.containsKey('role')) {	
-      final roleID = responseData['role'];
-      final cidade = responseData['cidade'];
-      final estado = responseData['estado'];
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => PaginaPrincipal(
-            emailUsuario: email,
-            accessToken: response.body.trim(),
-            roleID: roleID,
-            cidade: cidade,
-            estado: estado,
-          ),
-        ),
-      );
-      showSuccessSnackbar();
-    } else {
       setState(() {
-        errorMessage = "roleId não encontrado na resposta da API.";
+        isLoading = true;
+        errorMessage = '';
       });
-    }
-  } else {
-    setState(() {
-      errorMessage = "Falha ao fazer login. Verifique suas credenciais.";
-    });
-  }
-}
 
+      final url = Uri.parse('https://api-sistema-de-votacao.vercel.app/Login');
+
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'email': email,
+            'senha': password,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          final responseData = json.decode(response.body);
+
+          if (responseData.containsKey('role')) {
+            final roleID = responseData['role'];
+            final cidade = responseData['cidade'];
+            final estado = responseData['estado'];
+
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => PaginaPrincipal(
+                  emailUsuario: email,
+                  accessToken: response.body.trim(),
+                  roleID: roleID,
+                  cidade: cidade,
+                  estado: estado,
+                ),
+              ),
+            );
+            showSuccessSnackbar();
+          } else {
+            setState(() {
+              errorMessage = "roleId não encontrado na resposta da API.";
+            });
+          }
+        } else {
+          setState(() {
+            errorMessage = "Falha ao fazer login. Verifique suas credenciais.";
+          });
+        }
+      } catch (e) {
+        setState(() {
+          errorMessage = "Erro inesperado durante o login.";
+        });
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,51 +113,59 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 45),
-                  TextFormField(
-                    controller: emailEditingController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.mail),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        TextFormField(
+                          controller: emailEditingController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.mail),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Campo obrigatório';
+                            } else if (!value.contains('@')) {
+                              return 'Email inválido';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: passwordEditingController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'Senha',
+                            prefixIcon: Icon(Icons.vpn_key),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.length < 6) {
+                              return 'Senha deve conter pelo menos 6 caracteres';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 10),
+                        if (errorMessage.isNotEmpty)
+                          Text(
+                            errorMessage,
+                            style: TextStyle(
+                              color: Colors.red,
+                            ),
+                          ),
+                        SizedBox(height: 25),
+                        buildMaterialButton(
+                          onPressed: login,
+                          label: "Logar",
+                        ),
+                        SizedBox(height: 10),
+                        if (isLoading) CircularProgressIndicator(),
+                      ],
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Campo obrigatório';
-                      } else if (!value.contains('@')) {
-                        return 'Email inválido';
-                      }
-                      return null;
-                    },
                   ),
-                  SizedBox(height: 15),
-                  TextFormField(
-                    controller: passwordEditingController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Senha',
-                      prefixIcon: Icon(Icons.vpn_key),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.length < 6) {
-                        return 'Senha deve conter pelo menos 6 caracteres';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  if (errorMessage.isNotEmpty)
-                    Text(
-                      errorMessage,
-                      style: TextStyle(
-                        color: Colors.red,
-                      ),
-                    ),
-                  SizedBox(height: 25),
-                  buildMaterialButton(
-                    onPressed: login,
-                    label: "Logar",
-                  ),
-                  SizedBox(height: 10),
                 ],
               ),
             ),
