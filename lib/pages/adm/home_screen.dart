@@ -3,8 +3,8 @@ import 'package:votacao/pages/adm/cadastro_pesquisador_screen.dart';
 import 'package:votacao/pages/adm/results_screen.dart';
 import 'package:votacao/pages/adm/cadastro_cadidato_screen.dart';
 import 'package:votacao/pages/adm/dashboard_screen.dart';
-import 'package:votacao/pages/candidato/listaDeCandidatos_screen.dart';
-import 'package:votacao/pages/login_screen.dart';
+import 'package:votacao/pages/pesquisador/listaDeCandidatos_screen.dart';
+import 'package:votacao/pages/pesquisador/login_screen.dart';
 
 class PaginaPrincipal extends StatelessWidget {
   final String emailUsuario;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:votacao/pages/login_screen.dart';
-import 'package:votacao/pages/welcome_screen.dart';
+import 'package:votacao/pages/pesquisador/login_screen.dart';
+
 
 void main() {
   runApp(const MyApp());

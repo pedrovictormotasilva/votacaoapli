@@ -14,7 +14,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String selectedType = 'Todos';
   TextEditingController searchController = TextEditingController();
-
+  bool isLoading = true; 
   List<Candidate> candidates = [];
   List<Pesquisador> researchers = [];
 
