@@ -29,38 +29,35 @@ class PaginaPrincipal extends StatelessWidget {
     );
   }
 
-  Widget buildSquareButton(
-    BuildContext context,
-    String buttonText,
-    IconData icon,
-    VoidCallback onPressed,
-  ) {
+  Widget buildSquareButton(BuildContext context, String buttonText,
+      IconData icon, VoidCallback onPressed,
+      {double width = double.infinity}) {
     return Expanded(
       child: Container(
-        margin: EdgeInsets.all(8),
+        margin: EdgeInsets.all(10),
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             primary: Color(0xFF118E51),
+            onPrimary: Colors.white,
             elevation: 5,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
             ),
+            padding: EdgeInsets.all(20),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 30,
-                color: Colors.white,
+                size: 40,
               ),
               SizedBox(height: 10),
               Text(
                 buttonText,
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
+                  fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -107,11 +104,81 @@ class PaginaPrincipal extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                if (roleID == 1 || roleID == 2)
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  if (roleID == 2)
+                    buildSquareButton(
+                      context,
+                      'Cadastro de Candidatos',
+                      Icons.person_add,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CadastroCandidato(
+                              accessToken: accessToken,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  if (roleID == 2)
+                    buildSquareButton(
+                      context,
+                      'Cadastro de Pesquisadores',
+                      Icons.person_add,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegistrationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+              Row(
+                children: [
+                  if (roleID == 2)
+                    buildSquareButton(
+                      context,
+                      'Painel Administrativo',
+                      Icons.dashboard,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DashboardScreen(
+                              accessToken: accessToken,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  if (roleID == 2)
+                    buildSquareButton(
+                      context,
+                      'Resultados dos Votos',
+                      Icons.bar_chart,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ResultadoVotosScreen(
+                              accessToken: accessToken,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+              Row(
+                children: [
                   buildSquareButton(
                     context,
                     'Lista de Candidatos',
@@ -129,88 +196,20 @@ class PaginaPrincipal extends StatelessWidget {
                         ),
                       );
                     },
-                  ),
-                if (roleID == 2)
-                  buildSquareButton(
-                    context,
-                    'Cadastro de Candidatos',
-                    Icons.person_add,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CadastroCandidato(
-                            accessToken: accessToken,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-              ],
-            ),
-            Row(
-              children: [
-                if (roleID == 2)
-                  buildSquareButton(
-                    context,
-                    'Painel Administrativo',
-                    Icons.dashboard,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DashboardScreen(
-                            accessToken: accessToken,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                if (roleID == 2)
-                  buildSquareButton(
-                    context,
-                    'Resultados dos Votos',
-                    Icons.bar_chart,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ResultadoVotosScreen(
-                            accessToken: accessToken,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-              ],
-            ),
-            if (roleID == 2)
-              Row(
-                children: [
-                  buildSquareButton(
-                    context,
-                    'Cadastro de Pesquisadores',
-                    Icons.person_add,
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegistrationScreen(),
-                        ),
-                      );
-                    },
+                    width: MediaQuery.of(context).size.width / 2,
                   ),
                 ],
               ),
-            SizedBox(height: 20),
-            Text(
-              "Faça sua voz ser ouvida!",
-              style: TextStyle(
-                fontSize: 18,
-                color: Color(0xFF395B6B),
+              SizedBox(height: 20),
+              Text(
+                "Faça sua voz ser ouvida!",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF395B6B),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:votacao/pages/adm/home_screen.dart';
+import 'package:votacao/pages/pesquisador/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -16,12 +16,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordEditingController = TextEditingController();
 
   bool isLoading = false;
+  bool isPasswordVisible = false; 
   String errorMessage = '';
 
   void showSuccessSnackbar() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Login bem-sucedido!"),
       duration: Duration(seconds: 2),
+      backgroundColor: Colors.green,
     ));
   }
 
@@ -81,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } catch (e) {
         setState(() {
-          errorMessage = "Erro inesperado durante o login.";
+          errorMessage = "Conecte-se em uma rede Wi-fi para logar.";
         });
       } finally {
         setState(() {
@@ -136,14 +138,26 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: 15),
                         TextFormField(
                           controller: passwordEditingController,
-                          obscureText: true,
+                          obscureText: !isPasswordVisible, 
                           decoration: InputDecoration(
                             labelText: 'Senha',
                             prefixIcon: Icon(Icons.vpn_key),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  isPasswordVisible = !isPasswordVisible;
+                                });
+                              },
+                            ),
                           ),
                           validator: (value) {
                             if (value == null || value.length < 6) {
-                              return 'Senha deve conter pelo menos 6 caracteres';
+                              return 'Campo obrigatório';
                             }
                             return null;
                           },
@@ -156,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.red,
                             ),
                           ),
-                        SizedBox(height: 25),
+                        SizedBox(height: 15),
                         buildMaterialButton(
                           onPressed: login,
                           label: "Logar",
@@ -184,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
       borderRadius: BorderRadius.circular(30),
       color: Color(0xFF118E51),
       child: MaterialButton(
-        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), 
         minWidth: MediaQuery.of(context).size.width,
         onPressed: onPressed,
         child: Text(

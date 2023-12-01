@@ -244,15 +244,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     )
                     .toList(),
               ),
-              Expanded(
-                child: TextField(
-                  controller: searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Pesquisar',
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                ),
-              ),
             ],
           ),
           Text(
@@ -381,7 +372,7 @@ class EditResearcherDialog extends StatelessWidget {
           TextField(
             controller: senhaController,
             obscureText: true,
-            decoration: InputDecoration(labelText: 'Nova Senha'),
+            decoration: InputDecoration(labelText: 'Comfirme ou altere a senha'),
           ),
         ],
       ),
@@ -401,7 +392,7 @@ class EditResearcherDialog extends StatelessWidget {
               estado: estadoController.text,
               cidade: cidadeController.text,
               cpf: researcher.cpf,
-              senha: senhaController.text, // Usar a nova senha se fornecida
+              senha: senhaController.text, 
             );
 
             onUpdate(updatedResearcher);

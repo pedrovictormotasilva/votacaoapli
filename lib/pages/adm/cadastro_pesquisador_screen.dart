@@ -26,6 +26,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Cadastro bem-sucedido!"),
       duration: Duration(seconds: 2),
+      backgroundColor: Colors.green,
     ));
   }
 
@@ -33,6 +34,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text("Erro no cadastro: $errorMessage"),
       duration: Duration(seconds: 4),
+      backgroundColor: const Color.fromARGB(255, 158, 38, 30),
     ));
   }
 
@@ -74,7 +76,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               "Erro no cadastro: ${errorData['default']['error']['msg']}");
         }
       } catch (e) {
-        showErrorSnackbar("Erro inesperado durante o cadastro.");
+        showErrorSnackbar("Esse email já foi cadastrado");
       } finally {
         setState(() {
           isLoading = false;
@@ -95,8 +97,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         estadoEditingController.text = cepData['uf'];
         cidadeEditingController.text = cepData['localidade'];
       });
+
+      estadoEditingController..text = cepData['uf'];
+      cidadeEditingController..text = cepData['localidade'];
     } else {
-      showErrorSnackbar("CEP não encontrado");
+      showErrorSnackbar("CEP não encontrado, preencha corretamente.");
     }
   }
 
@@ -105,7 +110,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color.fromARGB(0, 0, 0, 0),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
@@ -206,6 +211,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           },
                         ),
                         SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: cepEditingController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: 'CEP',
+                                  prefixIcon: Icon(Icons.location_on),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Campo obrigatório';
+                                  } else if (value.length != 8) {
+                                    return 'CEP deve conter 8 dígitos';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            IconButton(
+                              onPressed: () {
+                                fetchCepData();
+                              },
+                              icon: Icon(Icons.search),
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
                         TextFormField(
                           controller: estadoEditingController,
                           decoration: InputDecoration(
@@ -214,10 +250,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'O campo Estado é obrigatório, preencha por favor';
+                              return 'Prencha o CEP referente ao estado';
                             }
                             return null;
                           },
+                          enabled: false,
                         ),
                         SizedBox(height: 20),
                         TextFormField(
@@ -228,36 +265,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'O campo Cidade é obrigatório, preencha por favor';
+                              return 'Prencha o CEP referente à cidade';
                             }
                             return null;
                           },
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: cepEditingController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'CEP',
-                            prefixIcon: Icon(Icons.location_on),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Campo obrigatório';
-                            } else if (value.length != 8) {
-                              return 'CEP deve conter 8 dígitos';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            fetchCepData();
-                          },
-                          child: Text(
-                            "Preencher Estado e Cidade pelo CEP",
-                          ),
+                          enabled: false,
                         ),
                         SizedBox(height: 20),
                         ElevatedButton(

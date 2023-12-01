@@ -87,13 +87,15 @@ class _CadastroCandidatoState extends State<CadastroCandidato> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Candidato cadastrado com sucesso.'),
           duration: Duration(seconds: 2),
+          backgroundColor: Colors.green,
         ));
         print('Candidato cadastrado com sucesso');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              'Erro no cadastro do candidato. Response -> ${await response.stream.bytesToString()}'),
-          duration: Duration(seconds: 2),
+              'Preencha todos os campos corretamente'),
+              backgroundColor: const Color.fromARGB(255, 158, 38, 30),
+          duration: Duration(seconds: 3),
         ));
         print(
             'Erro no cadastro do candidato, response -> ${await response.stream.bytesToString()}');
