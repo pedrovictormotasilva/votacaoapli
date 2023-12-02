@@ -14,7 +14,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String selectedType = 'Todos';
   TextEditingController searchController = TextEditingController();
-  bool isLoading = true; 
+  bool isLoading = true;
   List<Candidate> candidates = [];
   List<Pesquisador> researchers = [];
 
@@ -27,6 +27,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> fetchCandidates() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
       final response = await http.get(
         Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
       );
@@ -43,11 +47,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     } catch (error) {
       print('Erro ao buscar candidatos. Detalhes: $error');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   Future<void> fetchResearchers() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
       final response = await http.get(
         Uri.parse('https://api-sistema-de-votacao.vercel.app/Pesquisadores'),
       );
@@ -64,6 +76,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     } catch (error) {
       print('Erro ao buscar pesquisadores. Detalhes: $error');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -223,44 +239,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: Text('Dashboard'),
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              DropdownButton<String>(
-                value: selectedType,
-                onChanged: (value) {
-                  setState(() {
-                    selectedType = value!;
-                  });
-                },
-                items: ['Todos', 'Candidatos', 'Pesquisadores']
-                    .map<DropdownMenuItem<String>>(
-                      (String value) => DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ],
-          ),
-          Text(
-            selectedType == 'Candidatos'
-                ? 'Candidatos'
-                : (selectedType == 'Pesquisadores' ? 'Pesquisadores' : 'Todos'),
-            style: TextStyle(
-              fontSize: 20,
+      body: isLoading
+          ? LoadingScreen() // Exibe a tela de carregamento se isLoading for true
+          : Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    DropdownButton<String>(
+                      value: selectedType,
+                      onChanged: (value) {
+                        setState(() {
+                          selectedType = value!;
+                        });
+                      },
+                      items: ['Todos', 'Candidatos', 'Pesquisadores']
+                          .map<DropdownMenuItem<String>>(
+                            (String value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
+                ),
+                Text(
+                  selectedType == 'Candidatos'
+                      ? 'Candidatos'
+                      : (selectedType == 'Pesquisadores'
+                          ? 'Pesquisadores'
+                          : 'Todos'),
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    children: buildList(),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            child: ListView(
-              children: buildList(),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -372,7 +392,8 @@ class EditResearcherDialog extends StatelessWidget {
           TextField(
             controller: senhaController,
             obscureText: true,
-            decoration: InputDecoration(labelText: 'Comfirme ou altere a senha'),
+            decoration:
+                InputDecoration(labelText: 'Confirme ou altere a senha'),
           ),
         ],
       ),
@@ -392,7 +413,7 @@ class EditResearcherDialog extends StatelessWidget {
               estado: estadoController.text,
               cidade: cidadeController.text,
               cpf: researcher.cpf,
-              senha: senhaController.text, 
+              senha: senhaController.text,
             );
 
             onUpdate(updatedResearcher);
@@ -591,6 +612,17 @@ class EditCandidateDialog extends StatelessWidget {
           child: Text('Salvar'),
         ),
       ],
+    );
+  }
+}
+
+class LoadingScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

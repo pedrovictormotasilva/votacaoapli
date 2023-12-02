@@ -48,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
           body: json.encode({
             'email': email,
             'senha': password,
+            
           }),
         );
 
@@ -58,6 +59,8 @@ class _LoginScreenState extends State<LoginScreen> {
             final roleID = responseData['role'];
             final cidade = responseData['cidade'];
             final estado = responseData['estado'];
+            final nome = responseData['name'] ?? '';
+            
 
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
@@ -67,6 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   roleID: roleID,
                   cidade: cidade,
                   estado: estado,
+                  nomeUsuario: nome, 
+
+                 
                 ),
               ),
             );

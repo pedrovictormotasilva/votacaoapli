@@ -12,6 +12,7 @@ class PaginaPrincipal extends StatelessWidget {
   final int roleID;
   final String cidade;
   final String estado;
+  final String nomeUsuario;
 
   PaginaPrincipal({
     required this.emailUsuario,
@@ -19,6 +20,7 @@ class PaginaPrincipal extends StatelessWidget {
     required this.roleID,
     required this.cidade,
     required this.estado,
+    required this.nomeUsuario,
   });
 
   void clearToken(BuildContext context) {
@@ -29,9 +31,13 @@ class PaginaPrincipal extends StatelessWidget {
     );
   }
 
-  Widget buildSquareButton(BuildContext context, String buttonText,
-      IconData icon, VoidCallback onPressed,
-      {double width = double.infinity}) {
+  Widget buildSquareButton(
+    BuildContext context,
+    String buttonText,
+    IconData icon,
+    VoidCallback onPressed, {
+    double width = double.infinity,
+  }) {
     return Expanded(
       child: Container(
         margin: EdgeInsets.all(10),
@@ -79,7 +85,7 @@ class PaginaPrincipal extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(''),
+              accountName: Text(nomeUsuario),
               accountEmail: Text(emailUsuario),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -107,6 +113,41 @@ class PaginaPrincipal extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              SizedBox(height: 20),
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Color(0xFF395B6B),
+                child: Icon(
+                  roleID == 1 ? Icons.assignment : Icons.admin_panel_settings,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Bem-vindo, $nomeUsuario!",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF395B6B),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  roleID == 1
+                      ? "Você é um pesquisador cadastrado no município de $cidade."
+                      : "Você é um administrador e tem acesso a todas as funções do nosso app!",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 20),
               Row(
                 children: [
                   if (roleID == 2)

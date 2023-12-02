@@ -16,6 +16,7 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   String? selectedState;
   String? selectedMunicipio;
   String? cep;
+  bool isLoading = true;
 
   Map<String, List<String>> brazilianMunicipios = {};
   int totalVotes = 0;
@@ -35,62 +36,73 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   }
 
   Future<void> fetchCandidates([String? estado, String? municipio]) async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
-        headers: {},
-      );
+  try {
+    setState(() {
+      isLoading = true;
+    });
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+    final response = await http.get(
+      Uri.parse('https://api-sistema-de-votacao.vercel.app/Candidatos'),
+      headers: {},
+    );
 
-        setState(() {
-          candidates = data
-              .map((e) => Candidate.fromJson(e))
-              .where((candidate) => (municipio == null ||
-                  candidate.municipio.toLowerCase() == municipio.toLowerCase()))
-              .toList();
-          fetchCandidatesVotes();
-        });
-      } else {
-        throw Exception('Erro ao obter a lista de candidatos');
-      }
-    } catch (error) {
-      print('');
-      showErrorSnackbar('Erro ao buscar candidatos.');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+
+      setState(() {
+        candidates = data
+            .map((e) => Candidate.fromJson(e))
+            .where((candidate) =>
+                (municipio == null ||
+                    candidate.municipio.toLowerCase() ==
+                        municipio.toLowerCase()))
+            .toList();
+      });
+
+      await fetchCandidatesVotes(); 
+      calculateTotalVotes();
+    } else {
+      throw Exception('Erro ao obter a lista de candidatos');
     }
+  } catch (error) {
+    print('');
+    showErrorSnackbar('Erro ao buscar candidatos.');
+  } finally {
+    setState(() {
+      isLoading = false;
+    });
   }
+}
 
-  Future<void> fetchCandidatesVotes() async {
-    try {
-      final responseVotes = await http.get(
-        Uri.parse('https://api-sistema-de-votacao.vercel.app/Resultado'),
-        headers: {},
-      );
+Future<void> fetchCandidatesVotes() async {
+  try {
+    final responseVotes = await http.get(
+      Uri.parse('https://api-sistema-de-votacao.vercel.app/Resultado'),
+      headers: {},
+    );
 
-      if (responseVotes.statusCode == 200) {
-        final List<dynamic> data = json.decode(responseVotes.body);
+    if (responseVotes.statusCode == 200) {
+      final List<dynamic> data = json.decode(responseVotes.body);
 
-        for (var candidate in candidates) {
-          final result = data.firstWhere(
-            (result) => result['id_candidato'] == candidate.candidatoId,
-            orElse: () => {},
-          );
+      for (var candidate in candidates) {
+        final result = data.firstWhere(
+          (result) => result['id_candidato'] == candidate.candidatoId,
+          orElse: () => {},
+        );
 
-          if (result.isNotEmpty) {
-            candidate.votos = result['Votos'] ?? 0;
-          }
+        if (result.isNotEmpty) {
+          candidate.votos = result['Votos'] ?? 0;
         }
-
-        calculateTotalVotes();
-      } else {
-        throw Exception('Erro ao obter os resultados dos votos');
       }
-    } catch (error) {
-      print('Erro ao buscar votos dos candidatos: $error');
-      showErrorSnackbar('Erro ao buscar votos dos candidatos.');
+    } else {
+      throw Exception('Erro ao obter os resultados dos votos');
     }
+  } catch (error) {
+    print('Erro ao buscar votos dos candidatos: $error');
+    showErrorSnackbar('Erro ao buscar votos dos candidatos.');
   }
+}
+
 
   Future<void> fetchBrazilianMunicipios() async {
     final response = await http.get(
@@ -209,16 +221,18 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Resultados dos Votos'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Resultados dos Votos'),
+    ),
+    body: isLoading
+        ? LoadingScreen()  
+        : Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             Row(
               children: [
                 Expanded(
@@ -349,7 +363,10 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
         ),
       ),
     );
+    
   }
+  
+  
 
   void calculateTotalVotes() {
     int total = 0;
@@ -368,6 +385,16 @@ class _ResultadoVotosScreenState extends State<ResultadoVotosScreen> {
     }
 
     return (votes / totalVotes) * 100;
+  }
+}
+class LoadingScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 }
 
@@ -401,3 +428,6 @@ class Candidate {
     );
   }
 }
+
+
+
