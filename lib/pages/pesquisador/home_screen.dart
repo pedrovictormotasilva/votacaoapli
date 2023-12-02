@@ -116,9 +116,9 @@ class PaginaPrincipal extends StatelessWidget {
               SizedBox(height: 20),
               CircleAvatar(
                 radius: 50,
-                backgroundColor: Color(0xFF395B6B),
+                backgroundColor: Color(0xFF3B7D26),
                 child: Icon(
-                  roleID == 1 ? Icons.assignment : Icons.admin_panel_settings,
+                  roleID == 1 ? Icons.assignment_add : Icons.admin_panel_settings,
                   size: 40,
                   color: Colors.white,
                 ),
@@ -129,7 +129,7 @@ class PaginaPrincipal extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF395B6B),
+                  color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -139,7 +139,7 @@ class PaginaPrincipal extends StatelessWidget {
                 child: Text(
                   roleID == 1
                       ? "Você é um pesquisador cadastrado no município de $cidade."
-                      : "Você é um administrador e tem acesso a todas as funções do nosso app!",
+                      : "Você é um administrador e possui acesso a todas as funções do aplicativo!",
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.black87,
