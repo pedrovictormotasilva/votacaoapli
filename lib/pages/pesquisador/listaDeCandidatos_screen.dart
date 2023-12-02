@@ -26,7 +26,7 @@ class _PageOneState extends State<PageOne> {
   String? votanteNome;
   int? votanteIdade;
   String? votanteLocalidade;
-  bool isLoading = true; 
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -54,7 +54,7 @@ class _PageOneState extends State<PageOne> {
 
       setState(() {
         candidates = filteredCandidates.toList();
-        isLoading = false; 
+        isLoading = false;
       });
     }
   }
@@ -112,7 +112,7 @@ class _PageOneState extends State<PageOne> {
         title: Text("Lista de Candidatos"),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) 
+          ? Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -123,55 +123,64 @@ class _PageOneState extends State<PageOne> {
                       itemCount: candidates.length,
                       itemBuilder: (context, index) {
                         final candidate = candidates[index];
-                        return Card(
-                          elevation: 4,
-                          margin: EdgeInsets.only(bottom: 16),
-                          child: ListTile(
-                            title: Row(
-                              children: [
-                                Icon(
-                                  Icons.account_circle,
-                                  size: 48,
-                                  color: Color.fromARGB(255, 35, 77, 26),
-                                ),
-                                SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      candidate.nome,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedCandidate = candidate;
+                            });
+                            _showCandidateDetails(context);
+                          },
+                          child: Card(
+                            elevation: 4,
+                            margin: EdgeInsets.only(bottom: 16),
+                            child: ListTile(
+                              title: Row(
+                                children: [
+                                  Icon(
+                                    Icons.account_circle,
+                                    size: 48,
+                                    color: Color.fromARGB(255, 35, 77, 26),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        candidate.nome,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      candidate.apelido,
-                                      style: TextStyle(
-                                        color: Colors.grey,
+                                      Text(
+                                        candidate.apelido,
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      "Partido: ${candidate.partido}",
-                                      style: TextStyle(
-                                        color: Colors.grey,
+                                      Text(
+                                        "Partido: ${candidate.partido}",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            subtitle: Text(
-                              "Estado: ${candidate.estado}, Município: ${candidate.municipio}",
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(Icons.info),
-                              onPressed: () {
-                                setState(() {
-                                  selectedCandidate = candidate;
-                                });
-                                _showCandidateDetails(context);
-                              },
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              subtitle: Text(
+                                "Estado: ${candidate.estado}, Município: ${candidate.municipio}",
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.assignment_add),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedCandidate = candidate;
+                                  });
+                                  _showCandidateDetails(context);
+                                },
+                              ),
                             ),
                           ),
                         );
