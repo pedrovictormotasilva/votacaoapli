@@ -162,7 +162,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         fetchResearchers();
       } else {
-        print('Erro ao atualizar pesquisador. Código: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Você precisa confirmar ou atualizar a senha'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
       }
     } catch (error) {
       print('Erro durante a requisição. Detalhes: $error');
@@ -391,7 +397,7 @@ class EditResearcherDialog extends StatelessWidget {
           ),
           TextField(
             controller: senhaController,
-            obscureText: true,
+            obscureText: false,
             decoration:
                 InputDecoration(labelText: 'Confirme ou altere a senha'),
           ),
