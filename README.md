@@ -126,7 +126,7 @@ O aplicativo possui lógicas específicas para garantir a integridade e seguran�
 1. Clone o repositório em sua máquina local:
 
 ```bash
-git clone https://seu-repositorio.git 
+git clone https://github.com/pedrovictormotasilva/votacaoapli 
 ```
 
 2. Navegue até o diretório do projeto:
