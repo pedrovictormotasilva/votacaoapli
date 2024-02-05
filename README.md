@@ -42,12 +42,12 @@ Permite autenticação para Administradores e Pesquisadores.
 Apresenta funcionalidades específicas para cada perfil, como Cadastro de Candidatos, Cadastro de Pesquisadores e Lista de Candidatos.
 
 #### ADM
-| Tela ADM 1 | Tela ADM 2 |
+| Tela ADM 1 | SideBar ADM |
 | --- | --- |
 | <img src="https://github.com/pedrovictormotasilva/votacaoapli/assets/92291111/c9d0ae7c-cb50-4fe5-a784-ee03ec581902" width="300"> | <img src="https://github.com/pedrovictormotasilva/votacaoapli/assets/92291111/a46fa9a7-428a-46e4-be66-e5780c0589c2" width="300"> |
 
 #### PESQUISADOR
-| Tela Pesquisador 1 | Tela Pesquisador 2 |
+| Tela Pesquisador 1 | SideBar Pesquisador |
 | --- | --- |
 | <img src="https://github.com/pedrovictormotasilva/votacaoapli/assets/92291111/82b96cfb-005f-4a35-8f47-03be185dce6b" width="300"> | <img src="https://github.com/pedrovictormotasilva/votacaoapli/assets/92291111/8b795041-2dfb-4178-811d-6bf2a8d8bc75" width="300"> |
 
